@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MEV Intelligence Platform</title>
+    <link rel="stylesheet" href="./assets/css/styles.css" />
+  </head>
+  <body>
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-mark">M</span>
+        <div>
+          <strong>MEV Intel</strong>
+          <small>Research Console</small>
+        </div>
+      </div>
+      <nav id="nav"></nav>
+    </aside>
+
+    <main class="shell">
+      <header class="topbar">
+        <div class="search-wrap">
+          <select id="searchType" title="Search condition">
+            <option>Tx Hash</option>
+            <option>Block</option>
+            <option>Address</option>
+            <option>Token</option>
+          </select>
+          <input id="searchInput" placeholder="Search tx hash, block, address, token..." />
+          <button id="searchBtn" class="primary">Search</button>
+          <button id="moreBtn" title="More search conditions">Filters</button>
+        </div>
+        <div class="top-actions">
+          <select id="globalRange" title="Time granularity">
+            <option>1H</option>
+            <option selected>24H</option>
+            <option>7D</option>
+            <option>30D</option>
+            <option>90D</option>
+            <option>1Y</option>
+          </select>
+          <input id="fromDate" type="date" />
+          <input id="toDate" type="date" />
+          <button id="themeBtn" title="Toggle theme">Theme</button>
+        </div>
+      </header>
+
+      <section id="filterPanel" class="filter-panel hidden">
+        <label>MEV Type <select id="typeFilter"></select></label>
+        <label>Min Profit <input id="minProfit" type="number" value="0" /></label>
+        <label>Channel <select><option>All</option><option>Private</option><option>Public</option><option>MEV Blocker</option></select></label>
+      </section>
+
+      <section id="app"></section>
+    </main>
+
+    <script src="./assets/js/app.js"></script>
+  </body>
+</html>

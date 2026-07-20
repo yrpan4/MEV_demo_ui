@@ -1,0 +1,90 @@
+{
+  "chart": "Entity Analysis Role Config",
+  "type": "config",
+  "rows": {
+    "Searcher": {
+      "kpis": [
+        "Searcher PnL",
+        "Bundle Win Rate",
+        "Private Flow Ratio",
+        "Detector Mix"
+      ],
+      "charts": [
+        "Strategy mix by MEV type",
+        "Searcher profit and cost over time",
+        "Builder acceptance",
+        "Failed vs successful bundles"
+      ]
+    },
+    "Trader": {
+      "kpis": [
+        "Realized Slippage",
+        "Potential Victim Loss",
+        "Protected Flow Ratio",
+        "Counterparties"
+      ],
+      "charts": [
+        "Loss distribution",
+        "Affected pools",
+        "Route exposure",
+        "Wallet interaction graph"
+      ]
+    },
+    "Validator": {
+      "kpis": [
+        "MEV Boost Revenue",
+        "Payload Count",
+        "Relay Diversity",
+        "Missed Slots"
+      ],
+      "charts": [
+        "Validator payout over time",
+        "Relay share",
+        "Builder concentration",
+        "Slot-level block details"
+      ]
+    },
+    "Relayer": {
+      "kpis": [
+        "Payloads Relayed",
+        "Median Bid",
+        "Builder Diversity",
+        "Validator Coverage"
+      ],
+      "charts": [
+        "Bid and payload trend",
+        "Builder channel share",
+        "Latency bands",
+        "Top validators"
+      ]
+    },
+    "Contract Portfolio": {
+      "kpis": [
+        "Transactions",
+        "Profit",
+        "Cost",
+        "Revenue"
+      ],
+      "charts": [
+        "MEV type performance",
+        "Profit distribution",
+        "Favorite tokens",
+        "Builder acceptance"
+      ]
+    },
+    "Liquidator": {
+      "kpis": [
+        "Tx Count",
+        "Liquidation Amount",
+        "Profit",
+        "Liquidated Borrowers"
+      ],
+      "charts": [
+        "Liquidator behaviors",
+        "Profit distribution",
+        "Performance",
+        "Gas price paid"
+      ]
+    }
+  }
+}

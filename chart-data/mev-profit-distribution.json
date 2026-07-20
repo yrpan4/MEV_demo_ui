@@ -1,0 +1,36 @@
+{
+  "chart": "MEV Profit Distribution",
+  "type": "bar-line",
+  "rows": [
+    {
+      "bin": "-100k~-10k",
+      "count": 28,
+      "avgProfit": -28400
+    },
+    {
+      "bin": "-10k~0",
+      "count": 135,
+      "avgProfit": -2400
+    },
+    {
+      "bin": "0~1k",
+      "count": 3820,
+      "avgProfit": 216
+    },
+    {
+      "bin": "1k~10k",
+      "count": 1890,
+      "avgProfit": 3840
+    },
+    {
+      "bin": "10k~100k",
+      "count": 328,
+      "avgProfit": 28400
+    },
+    {
+      "bin": "100k+",
+      "count": 18,
+      "avgProfit": 186000
+    }
+  ]
+}

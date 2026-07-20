@@ -1,0 +1,62 @@
+{
+  "chart": "Latest MEV",
+  "type": "table",
+  "rows": [
+    {
+      "time": "a minute ago",
+      "tx": "0x9a11d6f86ef06d4bdb95e5815686a0f65b0f1d9a7720af5d954ad7e4ef1bb001",
+      "block": 22918482,
+      "tokens": [
+        "WETH",
+        "USDC"
+      ],
+      "from": "0x64545160d28Fd0E309277C02D6d73b3923C4bFA",
+      "profit": 5841.61,
+      "cost": 912.44,
+      "revenue": 6754.05,
+      "type": "Sandwich"
+    },
+    {
+      "time": "4 minutes ago",
+      "tx": "0x7f81a3a2dc4e771d8d02401f83f8b77a9ca916428f7864602500d76da889acf2",
+      "block": 22918472,
+      "tokens": [
+        "wstETH",
+        "WETH"
+      ],
+      "from": "0x8ce45e650ab17b6ca0dd6071f7c2b5c69b5b42b2",
+      "profit": 19426.38,
+      "cost": 1320.1,
+      "revenue": 20746.48,
+      "type": "AtomicArb"
+    },
+    {
+      "time": "9 minutes ago",
+      "tx": "0x43fb24e893ef3e27b9f35aeef5acd240fbba8dd9e9990622c155926d22c73301",
+      "block": 22918443,
+      "tokens": [
+        "PEPE",
+        "USDT"
+      ],
+      "from": "0xa75...8f8a2",
+      "profit": 4312.42,
+      "cost": 730.2,
+      "revenue": 5042.62,
+      "type": "CexDexTrades"
+    },
+    {
+      "time": "13 minutes ago",
+      "tx": "0x53b5bca7ba8c9300e605701430640021380ef691ad384ba65084310612f2bc8c",
+      "block": 22918428,
+      "tokens": [
+        "WBTC",
+        "USDC"
+      ],
+      "from": "0xdf9...6a555",
+      "profit": 12680.04,
+      "cost": 2260.94,
+      "revenue": 14940.98,
+      "type": "Liquidation"
+    }
+  ]
+}

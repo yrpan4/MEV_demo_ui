@@ -1,0 +1,34 @@
+{
+  "chart": "Overview",
+  "type": "pie",
+  "fields": [
+    "type",
+    "profit"
+  ],
+  "rows": [
+    {
+      "type": "AtomicArb",
+      "profit": 1284000
+    },
+    {
+      "type": "Sandwich",
+      "profit": 843000
+    },
+    {
+      "type": "CexDexQuotes",
+      "profit": 624000
+    },
+    {
+      "type": "CexDexTrades",
+      "profit": 536000
+    },
+    {
+      "type": "Jit",
+      "profit": 218000
+    },
+    {
+      "type": "Liquidation",
+      "profit": 335000
+    }
+  ]
+}

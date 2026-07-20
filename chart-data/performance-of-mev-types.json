@@ -1,0 +1,76 @@
+{
+  "chart": "Performance of MEV Types",
+  "type": "stacked-bar-line",
+  "mode": [
+    "profit",
+    "volume"
+  ],
+  "rows": [
+    {
+      "time": "01:00",
+      "AtomicArb": 342000,
+      "Sandwich": 186000,
+      "CexDexQuotes": 96000,
+      "CexDexTrades": 78000,
+      "Jit": 26000,
+      "Liquidation": 64000,
+      "count": 904,
+      "volumeEth": 4812
+    },
+    {
+      "time": "05:00",
+      "AtomicArb": 214000,
+      "Sandwich": 224000,
+      "CexDexQuotes": 104000,
+      "CexDexTrades": 118000,
+      "Jit": 44000,
+      "Liquidation": 42000,
+      "count": 1118,
+      "volumeEth": 5284
+    },
+    {
+      "time": "09:00",
+      "AtomicArb": 386000,
+      "Sandwich": 148000,
+      "CexDexQuotes": 136000,
+      "CexDexTrades": 84000,
+      "Jit": 32000,
+      "Liquidation": 58000,
+      "count": 1376,
+      "volumeEth": 6125
+    },
+    {
+      "time": "13:00",
+      "AtomicArb": 198000,
+      "Sandwich": 156000,
+      "CexDexQuotes": 122000,
+      "CexDexTrades": 146000,
+      "Jit": 51000,
+      "Liquidation": 89000,
+      "count": 1692,
+      "volumeEth": 7041
+    },
+    {
+      "time": "17:00",
+      "AtomicArb": 296000,
+      "Sandwich": 72000,
+      "CexDexQuotes": 84000,
+      "CexDexTrades": 62000,
+      "Jit": 28000,
+      "Liquidation": 39000,
+      "count": 1240,
+      "volumeEth": 4860
+    },
+    {
+      "time": "21:00",
+      "AtomicArb": 164000,
+      "Sandwich": 57000,
+      "CexDexQuotes": 82000,
+      "CexDexTrades": 48000,
+      "Jit": 15000,
+      "Liquidation": 43000,
+      "count": 942,
+      "volumeEth": 3910
+    }
+  ]
+}

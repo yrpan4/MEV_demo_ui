@@ -1,0 +1,10 @@
+{
+  "description": "Chart-level JSON produced by scripts/derive_chart_data.py. This checked-in sample mirrors data/mock-data.json for static preview.",
+  "charts": [
+    "overview-profit-share",
+    "performance-of-mev-types",
+    "mev-profit-distribution",
+    "latest-mev",
+    "tops"
+  ]
+}
