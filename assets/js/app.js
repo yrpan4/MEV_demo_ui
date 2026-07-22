@@ -13,7 +13,14 @@ const state = {
   flowPositions: {},
   draggingNode: null,
   hoverPoints: {},
-  tablePage: {}
+  tablePage: {},
+  simRows: [],
+  simImportOpen: false,
+  simImportMode: "tx",
+  simImportValue: "",
+  simImportStatus: "",
+  simInputs: null,
+  simTemplateName: ""
 };
 
 const pages = ["Market Overview", "MEV Explorer", "Entity Analysis", "Simulator Lab"];
@@ -693,27 +700,166 @@ function noEntityData() {
 }
 
 function simulatorLab() {
-  const templates = state.data.simulator.templates;
+  const templates = simTemplates();
+  if (!state.simInputs) state.simInputs = normalizeSimInputs(templates[0]?.inputs || {});
+  if (!state.simTemplateName) state.simTemplateName = templates[0]?.name || "";
+  ensureSimRows();
+  const rows = state.simRows;
+  const totals = simTotals();
+  const inputs = state.simInputs;
   return `
-    ${pageHead("Simulator Lab", "Template calculator reacts immediately and can jump imported tx/block samples into Explorer.")}
-    <div class="sim-layout">
+    ${pageHead("Simulator Lab", "Table-row simulator for one block at a time. Import a tx or block, then adjust each transaction row in place.")}
+    <div class="sim-layout sim-layout-wide">
       <article class="card card-pad">
         <h3>Calculator</h3>
         <div class="formula">
-          <label>Template <select id="simTemplate">${templates.map((t) => `<option>${t.name}</option>`).join("")}</select></label>
-          <label>Victim / Leg USD <input id="simBase" type="number" /></label>
-          <label>Gas USD <input id="simGas" type="number" /></label>
-          <label>Builder Payment USD <input id="simBuilder" type="number" /></label>
-          <label>Slippage bps <input id="simBps" type="number" /></label>
-          <label>Import Tx or Block <input id="simImport" placeholder="0x... or 22918482" /></label>
+          <label>Template <select id="simTemplate">${templates.map((t) => `<option ${t.name === state.simTemplateName ? "selected" : ""}>${t.name}</option>`).join("")}</select></label>
+          <label>Victim / Leg USD <input id="simBase" type="number" value="${inputs.base}" /></label>
+          <label>Gas USD <input id="simGas" type="number" value="${inputs.gas}" /></label>
+          <label>Builder Payment USD <input id="simBuilder" type="number" value="${inputs.builder}" /></label>
+          <label>Slippage bps <input id="simBps" type="number" value="${inputs.bps}" /></label>
         </div>
         <p><button id="runSim" class="primary">Run Simulation</button> <button id="importSim">Open Import</button></p>
         <div id="simResult" class="detail-pane"></div>
       </article>
       <div class="grid">
         ${chartCard("simChart", "Scenario Sensitivity", "profit after gas and builder payments")}
-        ${tableCard("Preset Templates", ["Template", "Default Inputs"], templates, (r) => `<td><span class="tag" data-jump="mev-type" data-value="${r.name}">${r.name}</span></td><td data-tooltip="${Object.entries(r.inputs).map(([k, v]) => `${k}: ${v}`).join(" | ")}">${Object.entries(r.inputs).map(([k, v]) => `${k}: ${v}`).join(" | ")}</td>`)}
       </div>
+    </div>
+    <article class="card card-pad sim-table-card">
+      <div class="chart-title">
+        <h3>Block Transaction Rows</h3>
+        <small id="simTotalsText">${rows.length} txs | Gross ${money(totals.gross)} | Cost ${money(totals.cost)} | Net ${money(totals.profit)}</small>
+      </div>
+      <div class="table-scroll-x">
+        <table class="sim-table">
+          <thead><tr><th>Block</th><th>Pos</th><th>Txn Hash</th><th>Method</th><th>MEV Type</th><th>Tokens</th><th>Protocol</th><th>From</th><th>To</th><th>Gas ETH</th><th>Builder ETH</th><th>Notional USD</th><th>Slippage bps</th><th>Net USD</th></tr></thead>
+          <tbody>${rows.map(simRowHtml).join("")}</tbody>
+        </table>
+      </div>
+    </article>
+    ${simImportDialog()}
+  `;
+}
+
+function simTemplates() {
+  const generated = state.data?.simulator?.templates || [];
+  if (generated.length) return generated;
+  return [
+    { name: "Sandwich", inputs: { victimSwapUsd: 271224, gasUsd: 900, builderPaymentUsd: 540, slippageBps: 40 } },
+    { name: "AtomicArb", inputs: { legTwoUsd: 840000, gasUsd: 1320, builderPaymentUsd: 220, slippageBps: 25 } },
+    { name: "CexDexQuotes", inputs: { victimSwapUsd: 500000, gasUsd: 802, builderPaymentUsd: 110, slippageBps: 14 } },
+    { name: "CexDexTrades", inputs: { victimSwapUsd: 814000, gasUsd: 730, builderPaymentUsd: 80, slippageBps: 12 } },
+    { name: "Jit", inputs: { victimSwapUsd: 1420000, gasUsd: 780, builderPaymentUsd: 240, slippageBps: 130 } },
+    { name: "Liquidation", inputs: { collateralUsd: 4200000, gasUsd: 2260, builderPaymentUsd: 280, slippageBps: 36 } }
+  ];
+}
+
+function normalizeSimInputs(inputs) {
+  return {
+    base: Number(inputs.victimSwapUsd || inputs.legTwoUsd || inputs.collateralUsd || 0),
+    gas: Number(inputs.gasUsd || 0),
+    builder: Number(inputs.builderPaymentUsd || 0),
+    bps: Number(inputs.slippageBps || 0)
+  };
+}
+
+function ensureSimRows() {
+  if (state.simRows.length) return;
+  const match = explorerCases()[0];
+  state.simRows = simRowsFromCase(match, match.rows || []);
+}
+
+function simRowsFromCase(match, rows) {
+  return rows.map((rowData) => {
+    const amountNumber = (label) => parseMoney(match.amounts?.[label]);
+    const defaultNotional = amountNumber("Victim Loss") || amountNumber("DEX Output") || amountNumber("Victim Swap") || amountNumber("Collateral Seized") || 250000;
+    return {
+      block: match.block?.height || "",
+      position: rowData.position || match.block?.position || "",
+      hash: rowData.hash || match.tx || "",
+      method: rowData.method || "Swap",
+      type: rowData.type || match.type || "",
+      tokens: (rowData.tokens || []).join(" / "),
+      protocol: (rowData.lps || []).join(", "),
+      from: rowData.from || "",
+      to: rowData.to || "",
+      gasFeeEth: Number(rowData.gasFeeEth || 0),
+      builderPayments: Number(rowData.builderPayments || 0),
+      notionalUsd: defaultNotional,
+      slippageBps: Number(state.simInputs?.bps || simTemplates()[0].inputs.slippageBps || 0)
+    };
+  });
+}
+
+function parseMoney(value) {
+  const numeric = Number(String(value || "").replace(/[^0-9.-]/g, ""));
+  return Number.isFinite(numeric) ? numeric : 0;
+}
+
+function simRowHtml(rowData, index) {
+  const profit = simRowProfit(rowData);
+  return `
+    <tr data-sim-row="${index}">
+      <td><input data-sim-field="block" value="${rowData.block}" /></td>
+      <td><input data-sim-field="position" type="number" value="${rowData.position}" /></td>
+      <td><input class="mono-input" data-sim-field="hash" value="${rowData.hash}" /></td>
+      <td><input data-sim-field="method" value="${rowData.method}" /></td>
+      <td><input data-sim-field="type" value="${rowData.type}" /></td>
+      <td><input data-sim-field="tokens" value="${rowData.tokens}" /></td>
+      <td><input data-sim-field="protocol" value="${rowData.protocol}" /></td>
+      <td><input class="mono-input" data-sim-field="from" value="${rowData.from}" /></td>
+      <td><input class="mono-input" data-sim-field="to" value="${rowData.to}" /></td>
+      <td><input data-sim-field="gasFeeEth" type="number" step="0.01" value="${rowData.gasFeeEth}" /></td>
+      <td><input data-sim-field="builderPayments" type="number" step="0.01" value="${rowData.builderPayments}" /></td>
+      <td><input data-sim-field="notionalUsd" type="number" step="100" value="${rowData.notionalUsd}" /></td>
+      <td><input data-sim-field="slippageBps" type="number" step="1" value="${rowData.slippageBps}" /></td>
+      <td data-sim-net class="${profit >= 0 ? "sim-positive" : "sim-negative"}">${money(profit)}</td>
+    </tr>
+  `;
+}
+
+function simRowProfit(rowData) {
+  const gross = Number(rowData.notionalUsd || 0) * (Number(rowData.slippageBps || 0) / 10000);
+  const gasUsd = Number(rowData.gasFeeEth || 0) * 3600;
+  const builderUsd = Number(rowData.builderPayments || 0) * 3600;
+  return gross - gasUsd - builderUsd;
+}
+
+function simTotals() {
+  return state.simRows.reduce((totals, rowData) => {
+    const gross = Number(rowData.notionalUsd || 0) * (Number(rowData.slippageBps || 0) / 10000);
+    const cost = (Number(rowData.gasFeeEth || 0) + Number(rowData.builderPayments || 0)) * 3600;
+    totals.gross += gross;
+    totals.cost += cost;
+    totals.profit += gross - cost;
+    return totals;
+  }, { gross: 0, cost: 0, profit: 0 });
+}
+
+function simImportDialog() {
+  if (!state.simImportOpen) return "";
+  return `
+    <div class="modal-backdrop" role="presentation">
+      <section class="card card-pad modal" role="dialog" aria-modal="true" aria-labelledby="simImportTitle">
+        <div class="chart-title">
+          <h3 id="simImportTitle">Import Transaction / Block</h3>
+          <button id="closeSimImport" aria-label="Close import dialog">Close</button>
+        </div>
+        <div class="formula">
+          <label>Import Type
+            <select id="simImportMode">
+              <option value="tx" ${state.simImportMode === "tx" ? "selected" : ""}>Transaction</option>
+              <option value="block" ${state.simImportMode === "block" ? "selected" : ""}>Block</option>
+            </select>
+          </label>
+          <label>Tx Hash / Block Number
+            <input id="simImportValue" value="${state.simImportValue}" placeholder="0x... or 22918482" />
+          </label>
+        </div>
+        <p class="modal-actions"><button id="confirmSimImport" class="primary">Import Data</button> <button id="cancelSimImport">Cancel</button></p>
+        ${state.simImportStatus ? `<p class="chart-note">${state.simImportStatus}</p>` : ""}
+      </section>
     </div>
   `;
 }
@@ -734,24 +880,74 @@ function bindPageEvents() {
   $("#playFlow")?.addEventListener("click", playFlow);
   $("#fitFlow")?.addEventListener("click", () => drawFlow());
   $("#simTemplate")?.addEventListener("change", loadSimTemplate);
+  ["#simBase", "#simGas", "#simBuilder", "#simBps"].forEach((selector) => {
+    $(selector)?.addEventListener("input", runSimulation);
+  });
   $("#runSim")?.addEventListener("click", runSimulation);
   $("#importSim")?.addEventListener("click", () => {
-    const value = $("#simImport").value.trim();
-    state.page = "MEV Explorer";
-    const match = value
-      ? explorerCases().find((c) => c.tx === value || String(c.block.height) === value)
-      : explorerCases().find((c) => c.type === $("#simTemplate").value);
-    if (match) loadExplorerTx(match.tx, match.type);
-    else {
-      state.currentTxHash = value || "";
-      state.explorerType = "";
-      state.selectedPosition = null;
-    }
+    state.simImportOpen = true;
+    state.simImportStatus = "";
     render();
   });
+  $$("[data-sim-field]").forEach((input) => input.addEventListener("input", updateSimRow));
+  $("#closeSimImport")?.addEventListener("click", closeSimImport);
+  $("#cancelSimImport")?.addEventListener("click", closeSimImport);
+  $("#simImportMode")?.addEventListener("change", (event) => { state.simImportMode = event.target.value; });
+  $("#simImportValue")?.addEventListener("input", (event) => { state.simImportValue = event.target.value; });
+  $("#simImportValue")?.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") importSimData();
+    if (event.key === "Escape") closeSimImport();
+  });
+  $("#confirmSimImport")?.addEventListener("click", importSimData);
   attachTooltips();
   attachCanvasTooltips();
-  if ($("#simTemplate")) loadSimTemplate();
+  if ($("#simResult")) runSimulation();
+}
+
+function updateSimRow(event) {
+  const rowEl = event.target.closest("[data-sim-row]");
+  if (!rowEl) return;
+  const rowData = state.simRows[Number(rowEl.dataset.simRow)];
+  const field = event.target.dataset.simField;
+  rowData[field] = event.target.type === "number" ? Number(event.target.value || 0) : event.target.value;
+  runSimulation();
+}
+
+function closeSimImport() {
+  state.simImportOpen = false;
+  state.simImportStatus = "";
+  render();
+}
+
+function importSimData() {
+  state.simImportMode = $("#simImportMode")?.value || state.simImportMode;
+  state.simImportValue = $("#simImportValue")?.value.trim() || "";
+  const value = state.simImportValue;
+  const cases = explorerCases();
+  let importedRows = [];
+  if (!value) {
+    const fallback = cases.find((c) => c.type === state.simTemplateName) || cases[0];
+    importedRows = simRowsFromCase(fallback, fallback.rows || []);
+  } else if (state.simImportMode === "block" || /^\d+$/.test(value)) {
+    cases
+      .filter((c) => String(c.block?.height) === value)
+      .forEach((c) => { importedRows = importedRows.concat(simRowsFromCase(c, c.rows || [])); });
+  } else {
+    const match = cases.find((c) => c.tx === value || (c.rows || []).some((rowData) => rowData.hash === value));
+    if (match) {
+      const rows = (match.rows || []).filter((rowData) => rowData.hash === value);
+      importedRows = simRowsFromCase(match, rows.length ? rows : match.rows || []);
+    }
+  }
+  if (!importedRows.length) {
+    state.simImportStatus = "No matching transaction or block exists in the local dataset.";
+    render();
+    return;
+  }
+  state.simRows = importedRows;
+  state.simImportOpen = false;
+  state.simImportStatus = "";
+  render();
 }
 
 function bindPagination() {
@@ -1277,12 +1473,13 @@ function playFlow() {
 }
 
 function loadSimTemplate() {
-  const template = state.data.simulator.templates.find((t) => t.name === $("#simTemplate").value);
-  const inputs = template.inputs;
-  $("#simBase").value = inputs.victimSwapUsd || inputs.legTwoUsd || inputs.collateralUsd || 0;
-  $("#simGas").value = inputs.gasUsd || 0;
-  $("#simBuilder").value = inputs.builderPaymentUsd || 0;
-  $("#simBps").value = inputs.slippageBps || 0;
+  const template = simTemplates().find((t) => t.name === $("#simTemplate").value) || simTemplates()[0];
+  state.simTemplateName = template.name;
+  state.simInputs = normalizeSimInputs(template.inputs || {});
+  $("#simBase").value = state.simInputs.base;
+  $("#simGas").value = state.simInputs.gas;
+  $("#simBuilder").value = state.simInputs.builder;
+  $("#simBps").value = state.simInputs.bps;
   runSimulation();
 }
 
@@ -1291,9 +1488,21 @@ function runSimulation() {
   const gas = Number($("#simGas").value || 0);
   const builder = Number($("#simBuilder").value || 0);
   const bps = Number($("#simBps").value || 0);
+  state.simInputs = { base, gas, builder, bps };
   const gross = base * (bps / 10000);
   const profit = gross - gas - builder;
   $("#simResult").innerHTML = `<strong>${money(profit)}</strong><br>Gross extraction ${money(gross)} - Gas ${money(gas)} - Builder payment ${money(builder)}.`;
+  $$("[data-sim-row]").forEach((rowEl) => {
+    const rowData = state.simRows[Number(rowEl.dataset.simRow)];
+    const netEl = rowEl.querySelector("[data-sim-net]");
+    if (!rowData || !netEl) return;
+    const rowProfit = simRowProfit(rowData);
+    netEl.textContent = money(rowProfit);
+    netEl.classList.toggle("sim-positive", rowProfit >= 0);
+    netEl.classList.toggle("sim-negative", rowProfit < 0);
+  });
+  const totals = simTotals();
+  if ($("#simTotalsText")) $("#simTotalsText").textContent = `${state.simRows.length} txs | Gross ${money(totals.gross)} | Cost ${money(totals.cost)} | Net ${money(totals.profit)}`;
   drawSimChart();
 }
 

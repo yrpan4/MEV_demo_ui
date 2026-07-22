@@ -188,6 +188,7 @@ tr.selected-row td { background: color-mix(in srgb, var(--accent) 16%, var(--pan
 
 .explorer-layout { display: grid; grid-template-columns: minmax(260px, 350px) minmax(0, 1fr); gap: 14px; min-width: 0; align-items: start; }
 .entity-layout, .sim-layout { display: grid; grid-template-columns: minmax(280px, 0.32fr) minmax(0, 1fr); gap: 14px; min-width: 0; }
+.sim-layout-wide { grid-template-columns: minmax(280px, 420px) minmax(0, 1fr); }
 .side-stack { display: grid; gap: 14px; align-content: start; }
 .mev-card { border-left: 3px solid var(--accent); cursor: pointer; }
 .mev-card.active { outline: 2px solid color-mix(in srgb, var(--accent) 65%, transparent); }
@@ -211,6 +212,44 @@ tr.selected-row td { background: color-mix(in srgb, var(--accent) 16%, var(--pan
 .formula { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); gap: 8px; }
 .formula label { display: grid; gap: 6px; color: var(--muted); }
 .formula input, .formula select { width: 100%; padding: 0 10px; }
+.sim-table-card { min-width: 0; }
+table.sim-table { min-width: 1680px; table-layout: fixed; }
+table.sim-table th, table.sim-table td { max-width: none; padding: 7px; }
+table.sim-table input {
+  width: 100%;
+  min-height: 32px;
+  padding: 0 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+table.sim-table th:nth-child(1), table.sim-table td:nth-child(1) { width: 112px; }
+table.sim-table th:nth-child(2), table.sim-table td:nth-child(2) { width: 74px; }
+table.sim-table th:nth-child(3), table.sim-table td:nth-child(3) { width: 210px; }
+table.sim-table th:nth-child(4), table.sim-table td:nth-child(4) { width: 130px; }
+table.sim-table th:nth-child(5), table.sim-table td:nth-child(5) { width: 130px; }
+table.sim-table th:nth-child(6), table.sim-table td:nth-child(6) { width: 150px; }
+table.sim-table th:nth-child(7), table.sim-table td:nth-child(7) { width: 170px; }
+table.sim-table th:nth-child(8), table.sim-table td:nth-child(8),
+table.sim-table th:nth-child(9), table.sim-table td:nth-child(9) { width: 170px; }
+table.sim-table th:nth-child(10), table.sim-table td:nth-child(10),
+table.sim-table th:nth-child(11), table.sim-table td:nth-child(11) { width: 98px; }
+table.sim-table th:nth-child(12), table.sim-table td:nth-child(12) { width: 132px; }
+table.sim-table th:nth-child(13), table.sim-table td:nth-child(13) { width: 112px; }
+table.sim-table th:nth-child(14), table.sim-table td:nth-child(14) { width: 118px; }
+.mono-input { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+.sim-positive { color: var(--accent); font-weight: 700; }
+.sim-negative { color: var(--danger); font-weight: 700; }
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(0, 0, 0, 0.52);
+}
+.modal { width: min(640px, 100%); }
+.modal-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 0; }
 .evidence-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
 .evidence-list li { border: 1px solid var(--line); border-radius: var(--radius); padding: 8px; background: var(--panel-2); }
 .amount-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); gap: 8px; }
