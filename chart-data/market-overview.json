@@ -1,10 +1,186 @@
 {
-  "description": "Chart-level JSON produced by scripts/derive_chart_data.py. This checked-in sample mirrors data/mock-data.json for static preview.",
+  "description": "Chart data generated from the local JSON MEV pipeline.",
+  "generatedAt": "2026-07-22T05:39:36.525861+00:00",
+  "ranges": {
+    "1H": {
+      "kpis": [
+        {
+          "label": "Detected MEV Records",
+          "value": "9977",
+          "delta": "1H local JSON window"
+        },
+        {
+          "label": "Total MEV Profit",
+          "value": "$1,380,165.63",
+          "delta": "profit fields from inspector results"
+        },
+        {
+          "label": "Detected Transactions",
+          "value": "5449",
+          "delta": "deduplicated by tx hash"
+        },
+        {
+          "label": "DEX Volume",
+          "value": "1,092,841.58 ETH",
+          "delta": "swap amount USD converted by ETHUSDT"
+        }
+      ]
+    },
+    "24H": {
+      "kpis": [
+        {
+          "label": "Detected MEV Records",
+          "value": "10022",
+          "delta": "24H local JSON window"
+        },
+        {
+          "label": "Total MEV Profit",
+          "value": "$1,368,206.18",
+          "delta": "profit fields from inspector results"
+        },
+        {
+          "label": "Detected Transactions",
+          "value": "5473",
+          "delta": "deduplicated by tx hash"
+        },
+        {
+          "label": "DEX Volume",
+          "value": "1,092,855.86 ETH",
+          "delta": "swap amount USD converted by ETHUSDT"
+        }
+      ]
+    },
+    "7D": {
+      "kpis": [
+        {
+          "label": "Detected MEV Records",
+          "value": "10022",
+          "delta": "7D local JSON window"
+        },
+        {
+          "label": "Total MEV Profit",
+          "value": "$1,368,206.18",
+          "delta": "profit fields from inspector results"
+        },
+        {
+          "label": "Detected Transactions",
+          "value": "5473",
+          "delta": "deduplicated by tx hash"
+        },
+        {
+          "label": "DEX Volume",
+          "value": "1,092,855.86 ETH",
+          "delta": "swap amount USD converted by ETHUSDT"
+        }
+      ]
+    },
+    "30D": {
+      "kpis": [
+        {
+          "label": "Detected MEV Records",
+          "value": "10022",
+          "delta": "30D local JSON window"
+        },
+        {
+          "label": "Total MEV Profit",
+          "value": "$1,368,206.18",
+          "delta": "profit fields from inspector results"
+        },
+        {
+          "label": "Detected Transactions",
+          "value": "5473",
+          "delta": "deduplicated by tx hash"
+        },
+        {
+          "label": "DEX Volume",
+          "value": "1,092,855.86 ETH",
+          "delta": "swap amount USD converted by ETHUSDT"
+        }
+      ]
+    },
+    "90D": {
+      "kpis": [
+        {
+          "label": "Detected MEV Records",
+          "value": "10022",
+          "delta": "90D local JSON window"
+        },
+        {
+          "label": "Total MEV Profit",
+          "value": "$1,368,206.18",
+          "delta": "profit fields from inspector results"
+        },
+        {
+          "label": "Detected Transactions",
+          "value": "5473",
+          "delta": "deduplicated by tx hash"
+        },
+        {
+          "label": "DEX Volume",
+          "value": "1,092,855.86 ETH",
+          "delta": "swap amount USD converted by ETHUSDT"
+        }
+      ]
+    },
+    "1Y": {
+      "kpis": [
+        {
+          "label": "Detected MEV Records",
+          "value": "10022",
+          "delta": "1Y local JSON window"
+        },
+        {
+          "label": "Total MEV Profit",
+          "value": "$1,368,206.18",
+          "delta": "profit fields from inspector results"
+        },
+        {
+          "label": "Detected Transactions",
+          "value": "5473",
+          "delta": "deduplicated by tx hash"
+        },
+        {
+          "label": "DEX Volume",
+          "value": "1,092,855.86 ETH",
+          "delta": "swap amount USD converted by ETHUSDT"
+        }
+      ]
+    }
+  },
+  "rows": {
+    "kpis": [
+      {
+        "label": "Detected MEV Records",
+        "value": "10022",
+        "delta": "24H local JSON window"
+      },
+      {
+        "label": "Total MEV Profit",
+        "value": "$1,368,206.18",
+        "delta": "profit fields from inspector results"
+      },
+      {
+        "label": "Detected Transactions",
+        "value": "5473",
+        "delta": "deduplicated by tx hash"
+      },
+      {
+        "label": "DEX Volume",
+        "value": "1,092,855.86 ETH",
+        "delta": "swap amount USD converted by ETHUSDT"
+      }
+    ]
+  },
   "charts": [
-    "overview-profit-share",
-    "performance-of-mev-types",
-    "mev-profit-distribution",
-    "latest-mev",
-    "tops"
+    "app-config.json",
+    "overview-profit-share.json",
+    "performance-of-mev-types.json",
+    "mev-profit-distribution.json",
+    "mev-volume-distribution.json",
+    "latest-mev.json",
+    "tops.json",
+    "mev-explorer.json",
+    "entities.json",
+    "simulator-templates.json"
   ]
 }

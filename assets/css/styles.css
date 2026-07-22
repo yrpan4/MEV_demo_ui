@@ -119,11 +119,19 @@ nav { display: grid; gap: 8px; }
 .chart-title h3 { margin: 0; font-size: 16px; }
 .chart-title small { color: var(--muted); }
 canvas { width: 100%; height: clamp(240px, 32vw, 320px); display: block; }
+.market-table-stack { display: grid; gap: 14px; width: 100%; min-width: 0; }
 
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
 th, td { padding: 10px; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap; max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
+.table-scroll-x { overflow: auto; width: 100%; min-width: 0; }
+.pagination { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding-top: 10px; color: var(--muted); font-size: 12px; }
+.pagination button { min-height: 30px; padding: 0 10px; }
+.pagination button:disabled { opacity: 0.45; cursor: not-allowed; }
+.wide-table-card { grid-column: 1 / -1; }
 table.tx-profit-table { min-width: 1120px; table-layout: fixed; }
 table.tx-profit-table th, table.tx-profit-table td { max-width: none; }
+table.tops-table { min-width: 1120px; table-layout: fixed; }
+table.tops-table th, table.tops-table td { max-width: none; }
 table.tx-profit-table th:nth-child(1), table.tx-profit-table td:nth-child(1) { width: 92px; }
 table.tx-profit-table th:nth-child(2), table.tx-profit-table td:nth-child(2) { width: 170px; }
 table.tx-profit-table th:nth-child(3), table.tx-profit-table td:nth-child(3) { width: 100px; }
@@ -179,6 +187,8 @@ tr.selected-row td { background: color-mix(in srgb, var(--accent) 16%, var(--pan
 .flow-controls { position: absolute; top: 12px; left: 12px; display: flex; gap: 8px; }
 .flow-order-label rect { fill: #050807; stroke: rgba(255, 255, 255, 0.12); }
 .flow-order-label text { fill: #ffffff; font-weight: 800; font-size: 10px; }
+.flow-node { cursor: grab; }
+.flow-node.dragging { cursor: grabbing; }
 .flow-detail-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(240px, 0.32fr); gap: 12px; align-items: stretch; }
 .flow-detail-card { min-height: clamp(360px, 52vh, 560px); box-shadow: none; }
 .detail-pane { margin-top: 10px; max-height: 420px; overflow: auto; color: var(--muted); font-size: 13px; line-height: 1.6; }

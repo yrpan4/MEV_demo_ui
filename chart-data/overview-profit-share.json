@@ -5,30 +5,216 @@
     "type",
     "profit"
   ],
+  "ranges": {
+    "1H": [
+      {
+        "type": "AtomicArb",
+        "profit": -2470775.43
+      },
+      {
+        "type": "Sandwich",
+        "profit": 191.86
+      },
+      {
+        "type": "Jit",
+        "profit": 0.0
+      },
+      {
+        "type": "Liquidation",
+        "profit": 0.0
+      },
+      {
+        "type": "CexDexQuotes",
+        "profit": 0.0
+      },
+      {
+        "type": "CexDexTrades",
+        "profit": 3850749.21
+      },
+      {
+        "type": "JitCexDex",
+        "profit": 0.0
+      }
+    ],
+    "24H": [
+      {
+        "type": "AtomicArb",
+        "profit": -2471320.45
+      },
+      {
+        "type": "Sandwich",
+        "profit": 191.86
+      },
+      {
+        "type": "Jit",
+        "profit": 0.0
+      },
+      {
+        "type": "Liquidation",
+        "profit": 0.0
+      },
+      {
+        "type": "CexDexQuotes",
+        "profit": 0.0
+      },
+      {
+        "type": "CexDexTrades",
+        "profit": 3839334.76
+      },
+      {
+        "type": "JitCexDex",
+        "profit": 0.0
+      }
+    ],
+    "7D": [
+      {
+        "type": "AtomicArb",
+        "profit": -2471320.45
+      },
+      {
+        "type": "Sandwich",
+        "profit": 191.86
+      },
+      {
+        "type": "Jit",
+        "profit": 0.0
+      },
+      {
+        "type": "Liquidation",
+        "profit": 0.0
+      },
+      {
+        "type": "CexDexQuotes",
+        "profit": 0.0
+      },
+      {
+        "type": "CexDexTrades",
+        "profit": 3839334.76
+      },
+      {
+        "type": "JitCexDex",
+        "profit": 0.0
+      }
+    ],
+    "30D": [
+      {
+        "type": "AtomicArb",
+        "profit": -2471320.45
+      },
+      {
+        "type": "Sandwich",
+        "profit": 191.86
+      },
+      {
+        "type": "Jit",
+        "profit": 0.0
+      },
+      {
+        "type": "Liquidation",
+        "profit": 0.0
+      },
+      {
+        "type": "CexDexQuotes",
+        "profit": 0.0
+      },
+      {
+        "type": "CexDexTrades",
+        "profit": 3839334.76
+      },
+      {
+        "type": "JitCexDex",
+        "profit": 0.0
+      }
+    ],
+    "90D": [
+      {
+        "type": "AtomicArb",
+        "profit": -2471320.45
+      },
+      {
+        "type": "Sandwich",
+        "profit": 191.86
+      },
+      {
+        "type": "Jit",
+        "profit": 0.0
+      },
+      {
+        "type": "Liquidation",
+        "profit": 0.0
+      },
+      {
+        "type": "CexDexQuotes",
+        "profit": 0.0
+      },
+      {
+        "type": "CexDexTrades",
+        "profit": 3839334.76
+      },
+      {
+        "type": "JitCexDex",
+        "profit": 0.0
+      }
+    ],
+    "1Y": [
+      {
+        "type": "AtomicArb",
+        "profit": -2471320.45
+      },
+      {
+        "type": "Sandwich",
+        "profit": 191.86
+      },
+      {
+        "type": "Jit",
+        "profit": 0.0
+      },
+      {
+        "type": "Liquidation",
+        "profit": 0.0
+      },
+      {
+        "type": "CexDexQuotes",
+        "profit": 0.0
+      },
+      {
+        "type": "CexDexTrades",
+        "profit": 3839334.76
+      },
+      {
+        "type": "JitCexDex",
+        "profit": 0.0
+      }
+    ]
+  },
   "rows": [
     {
       "type": "AtomicArb",
-      "profit": 1284000
+      "profit": -2471320.45
     },
     {
       "type": "Sandwich",
-      "profit": 843000
-    },
-    {
-      "type": "CexDexQuotes",
-      "profit": 624000
-    },
-    {
-      "type": "CexDexTrades",
-      "profit": 536000
+      "profit": 191.86
     },
     {
       "type": "Jit",
-      "profit": 218000
+      "profit": 0.0
     },
     {
       "type": "Liquidation",
-      "profit": 335000
+      "profit": 0.0
+    },
+    {
+      "type": "CexDexQuotes",
+      "profit": 0.0
+    },
+    {
+      "type": "CexDexTrades",
+      "profit": 3839334.76
+    },
+    {
+      "type": "JitCexDex",
+      "profit": 0.0
     }
   ]
 }

@@ -1,0 +1,40 @@
+{
+  "generatedAt": "2026-07-22T05:39:36.525861+00:00",
+  "detectors": [
+    {
+      "type": "AtomicArb",
+      "label": "Atomic Arbitrage",
+      "logic": "JSON detector for multi-swap atomic routes."
+    },
+    {
+      "type": "Sandwich",
+      "label": "Sandwich",
+      "logic": "JSON detector for front/victim/back pool overlap."
+    },
+    {
+      "type": "CexDexQuotes",
+      "label": "CEX-DEX Quotes",
+      "logic": "Compares DEX swaps with Binance public ticker placeholders."
+    },
+    {
+      "type": "CexDexTrades",
+      "label": "CEX-DEX Trades",
+      "logic": "Uses Binance ticker as placeholder until trade-window VWAP is supplied."
+    },
+    {
+      "type": "Jit",
+      "label": "JIT Liquidity",
+      "logic": "Detects mint-victim-burn sequences."
+    },
+    {
+      "type": "Liquidation",
+      "label": "Liquidation",
+      "logic": "Detects liquidation actions if present in preprocessed data."
+    },
+    {
+      "type": "JitCexDex",
+      "label": "JIT CEX-DEX",
+      "logic": "Combines JIT and CEX-DEX evidence."
+    }
+  ]
+}

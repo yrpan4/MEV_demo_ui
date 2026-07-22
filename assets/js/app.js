@@ -4,13 +4,16 @@ const state = {
   range: "24H",
   chartMode: "profit",
   topTab: "txProfit",
-  currentAddress: "0x64545160d28Fd0E309277C02D6d73b3923C4bFA",
-  entityRole: "Contract Portfolio",
-  currentTxHash: "0x9a11d6f86ef06d4bdb95e5815686a0f65b0f1d9a7720af5d954ad7e4ef1bb001",
-  explorerType: "Sandwich",
+  currentAddress: "",
+  entityRole: "",
+  currentTxHash: "",
+  explorerType: "",
   explorerView: "Token Flow",
   selectedPosition: null,
-  hoverPoints: {}
+  flowPositions: {},
+  draggingNode: null,
+  hoverPoints: {},
+  tablePage: {}
 };
 
 const pages = ["Market Overview", "MEV Explorer", "Entity Analysis", "Simulator Lab"];
@@ -20,14 +23,140 @@ const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => Array.from(document.querySelectorAll(selector));
 const money = (n) => `$${Number(n).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
 const compact = (value) => String(value).length > 18 ? `${String(value).slice(0, 8)}...${String(value).slice(-6)}` : value;
+const TABLE_PAGE_SIZE = 10;
 
 async function boot() {
-  state.data = await fetch("./data/mock-data.json").then((r) => r.json());
+  state.data = await loadAppData();
   document.body.insertAdjacentHTML("beforeend", `<div id="tooltip" class="tooltip"></div>`);
   initTooltipDelegation();
   initNav();
   initControls();
   render();
+}
+
+async function fetchJson(path) {
+  const response = await fetch(path);
+  if (!response.ok) throw new Error(`Failed to load ${path}`);
+  return response.json();
+}
+
+async function loadAppData() {
+  try {
+    const [
+      config,
+      market,
+      share,
+      performance,
+      profitDistribution,
+      volumeDistribution,
+      latest,
+      tops,
+      explorer,
+      entities,
+      simulator
+    ] = await Promise.all([
+      fetchJson("./chart-data/app-config.json"),
+      fetchJson("./chart-data/market-overview.json"),
+      fetchJson("./chart-data/overview-profit-share.json"),
+      fetchJson("./chart-data/performance-of-mev-types.json"),
+      fetchJson("./chart-data/mev-profit-distribution.json"),
+      fetchJson("./chart-data/mev-volume-distribution.json"),
+      fetchJson("./chart-data/latest-mev.json"),
+      fetchJson("./chart-data/tops.json"),
+      fetchJson("./chart-data/mev-explorer.json"),
+      fetchJson("./chart-data/entities.json"),
+      fetchJson("./chart-data/simulator-templates.json")
+    ]);
+    return {
+      generatedAt: config.generatedAt || market.generatedAt,
+      detectors: config.detectors || [],
+      overview: assembleOverview(market, share, performance, profitDistribution, volumeDistribution, latest, tops),
+      latest: latest.rows || [],
+      tops: tops.rows || {},
+      explorer: {
+        block: explorer.block || {},
+        transaction: explorer.transaction || {},
+        flow: explorer.flow || { summary: {}, nodes: [], edges: [] },
+        cases: explorer.cases || []
+      },
+      entities: {
+        profiles: entities.profiles || {},
+        portfolio: entities.portfolio || { address: "", kpis: [], favoriteTokens: [], builders: [] },
+        liquidator: entities.liquidator || { kpis: [], protocols: [], series: [] },
+        roles: entities.roles || {}
+      },
+      simulator: {
+        templates: simulator.templates || []
+      }
+    };
+  } catch (error) {
+    console.error("Failed to load chart-data JSON files", error);
+    return createEmptyAppData();
+  }
+}
+
+function createEmptyAppData() {
+  return {
+    generatedAt: "",
+    detectors: [],
+    overview: {
+      kpis: [],
+      share: [],
+      performance: [],
+      profitDistribution: [],
+      volumeDistribution: [],
+      ranges: {}
+    },
+    latest: [],
+    tops: { txProfit: [], pools: [], tokens: [] },
+    explorer: {
+      block: {},
+      transaction: {},
+      flow: { summary: {}, nodes: [], edges: [] },
+      cases: []
+    },
+    entities: {
+      profiles: {},
+      portfolio: { address: "", kpis: [], favoriteTokens: [], builders: [] },
+      liquidator: { kpis: [], protocols: [], series: [] },
+      roles: {}
+    },
+    simulator: { templates: [] }
+  };
+}
+
+function assembleOverview(market, share, performance, profitDistribution, volumeDistribution, latest, tops) {
+  const rangeNames = new Set([
+    ...Object.keys(market.ranges || {}),
+    ...Object.keys(share.ranges || {}),
+    ...Object.keys(performance.ranges || {}),
+    ...Object.keys(profitDistribution.ranges || {}),
+    ...Object.keys(volumeDistribution.ranges || {}),
+    ...Object.keys(latest.ranges || {}),
+    ...Object.keys(tops.ranges || {})
+  ]);
+  const ranges = {};
+  rangeNames.forEach((name) => {
+    const base = market.ranges?.[name] || {};
+    ranges[name] = {
+      kpis: base.kpis || [],
+      share: share.ranges?.[name] || base.share || [],
+      performance: performance.ranges?.[name] || base.performance || [],
+      profitDistribution: profitDistribution.ranges?.[name] || base.profitDistribution || [],
+      volumeDistribution: volumeDistribution.ranges?.[name] || base.volumeDistribution || [],
+      latest: latest.ranges?.[name] || base.latest || [],
+      tops: tops.ranges?.[name] || base.tops || {}
+    };
+  });
+  const fallbackRange = ranges["24H"] || ranges[rangeNames.values().next().value] || {};
+  return {
+    kpis: fallbackRange.kpis || [],
+    share: share.rows || fallbackRange.share || [],
+    performance: performance.rows || fallbackRange.performance || [],
+    profitDistribution: profitDistribution.rows || fallbackRange.profitDistribution || [],
+    volumeDistribution: volumeDistribution.rows || fallbackRange.volumeDistribution || [],
+    ranges
+  };
 }
 
 function initNav() {
@@ -75,7 +204,7 @@ function applySearch() {
   const value = $("#searchInput").value.trim();
   if (type === "Address") {
     state.page = "Entity Analysis";
-    loadEntityAddress(value || state.currentAddress);
+    loadEntityAddress(value || "");
   } else if (type === "Token") {
     state.page = "Market Overview";
     state.topTab = "tokens";
@@ -83,6 +212,11 @@ function applySearch() {
     state.page = "MEV Explorer";
     const match = explorerCases().find((item) => value && (item.tx.includes(value) || String(item.block.height) === value));
     if (match) loadExplorerTx(match.tx, match.type);
+    else {
+      state.currentTxHash = value || "";
+      state.explorerType = "";
+      state.selectedPosition = null;
+    }
   }
   render();
 }
@@ -136,18 +270,49 @@ function chartCard(id, title, note = "") {
   `;
 }
 
-function tableCard(title, columns, rows, mapper) {
+function tableCard(title, columns, rows, mapper, options = {}) {
+  const scrollClass = options.paginate ? "table-scroll-x" : "table-scroll-x";
+  const tableKey = options.tableKey || "";
+  const visibleRows = options.paginate ? pagedRows(tableKey, rows) : rows;
   return `
-    <article class="card card-pad">
+    <article class="card card-pad ${options.className || ""}">
       <div class="chart-title"><h3>${title}</h3><small>clickable tx / block / address / token fields</small></div>
-      <div style="overflow:auto">
-        <table>
+      <div class="${scrollClass}">
+        <table class="${options.tableClass || ""}">
           <thead><tr>${columns.map((c) => `<th data-tooltip="Sort by ${c}">${c}</th>`).join("")}</tr></thead>
-          <tbody>${rows.map((row) => `<tr>${mapper(row)}</tr>`).join("")}</tbody>
+          <tbody>${visibleRows.map((row) => `<tr>${mapper(row)}</tr>`).join("")}</tbody>
         </table>
       </div>
+      ${options.paginate ? paginationControls(tableKey, rows.length) : ""}
     </article>
   `;
+}
+
+function tablePage(tableKey, total) {
+  if (!tableKey) return 1;
+  const maxPage = Math.max(1, Math.ceil(total / TABLE_PAGE_SIZE));
+  const current = Math.min(maxPage, Math.max(1, state.tablePage[tableKey] || 1));
+  state.tablePage[tableKey] = current;
+  return current;
+}
+
+function pagedRows(tableKey, rows) {
+  if (!tableKey) return rows;
+  const page = tablePage(tableKey, rows.length);
+  const start = (page - 1) * TABLE_PAGE_SIZE;
+  return rows.slice(start, start + TABLE_PAGE_SIZE);
+}
+
+function paginationControls(tableKey, total) {
+  const page = tablePage(tableKey, total);
+  const maxPage = Math.max(1, Math.ceil(total / TABLE_PAGE_SIZE));
+  const start = total ? (page - 1) * TABLE_PAGE_SIZE + 1 : 0;
+  const end = Math.min(total, page * TABLE_PAGE_SIZE);
+  return `<div class="pagination" data-table-key="${tableKey}">
+    <button data-page-step="-1" ${page <= 1 ? "disabled" : ""}>Prev</button>
+    <span>${start.toLocaleString()}-${end.toLocaleString()} / ${total.toLocaleString()} | Page ${page.toLocaleString()} / ${maxPage.toLocaleString()}</span>
+    <button data-page-step="1" ${page >= maxPage ? "disabled" : ""}>Next</button>
+  </div>`;
 }
 
 function tokenBadges(tokens) {
@@ -155,23 +320,22 @@ function tokenBadges(tokens) {
 }
 
 function marketRows() {
-  const factor = rangeScale[state.range] || 1;
+  const rangeRows = state.data.overview.ranges?.[state.range] || {
+    kpis: state.data.overview.kpis,
+    performance: state.data.overview.performance,
+    share: state.data.overview.share,
+    profitDistribution: state.data.overview.profitDistribution,
+    volumeDistribution: state.data.overview.volumeDistribution,
+    latest: state.data.latest,
+    tops: state.data.tops
+  };
   return {
-    kpis: [
-      { label: "Total MEV Profit", value: scaledMoney(3840000), delta: `${state.range} selected` },
-      { label: "Detected Transactions", value: scaled(9428).toLocaleString(), delta: "all inspectors" },
-      { label: "Builder Payments", value: `${scaled(1284).toLocaleString()} ETH`, delta: "private flow dominant" },
-      { label: "Victim Loss Estimate", value: scaledMoney(812600), delta: "Sandwich + JIT" }
-    ],
-    performance: state.data.overview.performance.map((row, i) => {
-      const hourShift = state.range === "1H" ? `${i * 10}m` : row.time;
-      const out = { ...row, time: hourShift, count: scaled(row.count), volumeEth: scaled(row.volumeEth) };
-      state.data.detectors.forEach((d) => out[d.type] = Math.round(row[d.type] * factor));
-      return out;
-    }),
-    share: state.data.overview.share.map((row) => ({ ...row, profit: Math.round(row.profit * factor) })),
-    dist: state.data.overview.profitDistribution.map((row) => ({ ...row, count: scaled(row.count), avgProfit: row.avgProfit * Math.sqrt(factor) })),
-    latest: state.data.latest.map((row) => ({ ...row, profit: row.profit * factor, cost: row.cost * factor, revenue: row.revenue * factor }))
+    kpis: rangeRows.kpis,
+    performance: rangeRows.performance,
+    share: rangeRows.share,
+    dist: state.chartMode === "volume" ? (rangeRows.volumeDistribution || []) : rangeRows.profitDistribution,
+    latest: rangeRows.latest,
+    tops: rangeRows.tops
   };
 }
 
@@ -183,47 +347,76 @@ function marketOverview() {
       <button data-mode="volume" class="${state.chartMode === "volume" ? "active" : ""}">By Volume</button>
     </div>
   `;
-  const topRows = state.data.tops[state.topTab];
+  const topRows = [...(rows.tops[state.topTab] || [])].sort((a, b) => {
+    const key = state.chartMode === "volume" ? "volumeEth" : "revenue";
+    return Number(b[key] || 0) - Number(a[key] || 0);
+  });
+  const latestColumns = state.chartMode === "volume"
+    ? ["Time", "Tx", "Block", "Token", "From", "Token Amount", "Volume(ETH)", "Type"]
+    : ["Time", "Tx", "Block", "Token", "From", "Profit", "Cost", "Revenue", "Type"];
   return `
     ${pageHead("Market Overview", "Range-aware MEV market overview with clickable addresses, blocks, txs, tokens, and MEV types.", tools)}
     ${metrics(rows.kpis)}
     <div class="grid cols-2">
       ${chartCard("shareChart", "Overview", "Profit share by MEV type")}
       ${chartCard("performanceChart", "Performance of MEV Types", "Stacked value + count line")}
-      ${chartCard("profitDistChart", "MEV Profit Distribution", "Count and average profit by range")}
-      ${tableCard("Latest MEV", ["Time", "Tx", "Block", "Token", "From", "Profit", "Cost", "Revenue", "Type"], rows.latest, latestRow)}
+      ${chartCard("profitDistChart", state.chartMode === "volume" ? "MEV Volume Distribution" : "MEV Profit Distribution", state.chartMode === "volume" ? "Tx count and average token volume by range" : "Tx count and average profit by range")}
     </div>
-    <article class="card card-pad">
-      <div class="chart-title">
-        <h3>Tops</h3>
-        <div class="segmented">
-          ${["txProfit", "pools", "tokens"].map((tab) => `<button data-top-tab="${tab}" class="${state.topTab === tab ? "active" : ""}">${tab}</button>`).join("")}
+    <div class="market-table-stack">
+      ${tableCard("Latest MEV", latestColumns, rows.latest, latestRow, { tableClass: "tx-profit-table", paginate: true, tableKey: `latest:${state.range}:${state.chartMode}` })}
+      <article class="card card-pad">
+        <div class="chart-title">
+          <h3>Tops</h3>
+          <div class="segmented">
+            ${["txProfit", "pools", "tokens"].map((tab) => `<button data-top-tab="${tab}" class="${state.topTab === tab ? "active" : ""}">${tab}</button>`).join("")}
+          </div>
         </div>
-      </div>
-      ${topTable(state.topTab, topRows)}
-    </article>
+        ${topTable(state.topTab, topRows)}
+      </article>
+    </div>
   `;
 }
 
 function latestRow(row) {
+  const valueCells = state.chartMode === "volume"
+    ? `<td data-tooltip="${row.tokenAmount || "No token amount decoded"}">${row.tokenAmount || "-"}</td>
+      <td data-tooltip="DEX volume converted to ETH">${Number(row.volumeEth || 0).toLocaleString(undefined, { maximumFractionDigits: 6 })} ETH</td>`
+    : `<td data-tooltip="Profit = revenue - cost">${money(row.profit)}</td>
+      <td data-tooltip="Gas + builder payment + execution cost">${money(row.cost)}</td>
+      <td data-tooltip="Gross revenue before cost">${money(row.revenue)}</td>`;
+  const typeTags = (row.types || [row.type]).map((type) => `<span class="tag" data-jump="mev-type" data-value="${type}" data-tooltip="Open ${type} Explorer design">${type}</span>`).join(" ");
   return `<td data-tooltip="${row.time} in ${state.range} range">${row.time}</td>
     <td class="hash" data-jump="tx" data-value="${row.tx}" data-tooltip="Open tx ${row.tx}">${compact(row.tx)}</td>
     <td class="hash" data-jump="block" data-value="${row.block}" data-tooltip="Open block ${row.block}">${row.block}</td>
     <td>${tokenBadges(row.tokens)}</td>
     <td class="addr" data-jump="address" data-value="${row.from}" data-tooltip="Open entity ${row.from}">${compact(row.from)}</td>
-    <td data-tooltip="Profit = revenue - cost">${money(row.profit)}</td>
-    <td data-tooltip="Gas + builder payment + execution cost">${money(row.cost)}</td>
-    <td data-tooltip="Gross revenue before cost">${money(row.revenue)}</td>
-    <td><span class="tag" data-jump="mev-type" data-value="${row.type}" data-tooltip="Open ${row.type} Explorer design">${row.type}</span></td>`;
+    ${valueCells}
+    <td>${typeTags}</td>`;
 }
 
 function topTable(tab, rows) {
-  if (tab === "txProfit") return `<div style="overflow:auto"><table class="tx-profit-table"><thead><tr><th>Time</th><th>Tx</th><th>Block</th><th>Token</th><th>From</th><th>Profit</th><th>Cost</th><th>Revenue</th><th>Type</th></tr></thead><tbody>${rows.map((row) => `<tr>${latestRow(row)}</tr>`).join("")}</tbody></table></div>`;
-  if (tab === "pools") return `<div style="overflow:auto"><table><thead><tr><th>Pool Address</th><th>Protocol</th><th>Token</th><th>Profit</th><th>Cost</th><th>Revenue</th><th>Count</th><th>Type</th></tr></thead><tbody>${rows.map((r) => `<tr><td class="addr" data-jump="address" data-value="${r.pool}" data-tooltip="Open pool ${r.pool}">${compact(r.pool)}</td><td>${r.protocol}</td><td>${tokenBadges(r.tokens)}</td><td>${money(r.profit)}</td><td>${money(r.cost)}</td><td>${money(r.revenue)}</td><td>${r.count}</td><td><span class="tag" data-jump="mev-type" data-value="${r.type}">${r.type}</span></td></tr>`).join("")}</tbody></table></div>`;
-  return `<div style="overflow:auto"><table><thead><tr><th>Token</th><th>Profit</th><th>Cost</th><th>Revenue</th><th>Count</th><th>Type</th></tr></thead><tbody>${rows.map((r) => `<tr><td>${tokenBadges([r.token])}<span class="linkish" data-jump="token" data-value="${r.token}">${r.token}</span></td><td>${money(r.profit)}</td><td>${money(r.cost)}</td><td>${money(r.revenue)}</td><td>${r.count}</td><td><span class="tag" data-jump="mev-type" data-value="${r.type}">${r.type}</span></td></tr>`).join("")}</tbody></table></div>`;
+  const tableKey = `tops:${state.range}:${state.chartMode}:${tab}`;
+  const visibleRows = pagedRows(tableKey, rows);
+  const wrap = (table) => `<div class="table-scroll-x">${table}</div>${paginationControls(tableKey, rows.length)}`;
+  const metricHeads = state.chartMode === "volume"
+    ? "<th>Volume(ETH)</th>"
+    : "<th>Profit</th><th>Cost</th><th>Revenue</th>";
+  const metricCells = (r) => state.chartMode === "volume"
+    ? `<td>${Number(r.volumeEth || 0).toLocaleString(undefined, { maximumFractionDigits: 6 })} ETH</td>`
+    : `<td>${money(r.profit)}</td><td>${money(r.cost)}</td><td>${money(r.revenue)}</td>`;
+  if (tab === "txProfit") {
+    const heads = state.chartMode === "volume"
+      ? "<th>Time</th><th>Tx</th><th>Block</th><th>Token</th><th>From</th><th>Token Amount</th><th>Volume(ETH)</th><th>Type</th>"
+      : "<th>Time</th><th>Tx</th><th>Block</th><th>Token</th><th>From</th><th>Profit</th><th>Cost</th><th>Revenue</th><th>Type</th>";
+    return wrap(`<table class="tx-profit-table"><thead><tr>${heads}</tr></thead><tbody>${visibleRows.map((row) => `<tr>${latestRow(row)}</tr>`).join("")}</tbody></table>`);
+  }
+  if (tab === "pools") return wrap(`<table class="tops-table"><thead><tr><th>Pool Address</th><th>Protocol</th><th>Token</th>${metricHeads}<th>Count</th><th>Type</th></tr></thead><tbody>${visibleRows.map((r) => `<tr><td class="addr" data-jump="address" data-value="${r.pool}" data-tooltip="Open pool ${r.pool}">${compact(r.pool)}</td><td>${r.protocol}</td><td>${tokenBadges(r.tokens)}</td>${metricCells(r)}<td>${r.count}</td><td><span class="tag" data-jump="mev-type" data-value="${r.type}">${r.type}</span></td></tr>`).join("")}</tbody></table>`);
+  return wrap(`<table class="tops-table"><thead><tr><th>Token</th>${metricHeads}<th>Count</th><th>Type</th></tr></thead><tbody>${visibleRows.map((r) => `<tr><td>${tokenBadges([r.token])}<span class="linkish" data-jump="token" data-value="${r.token}">${r.token}</span></td>${metricCells(r)}<td>${r.count}</td><td><span class="tag" data-jump="mev-type" data-value="${r.type}">${r.type}</span></td></tr>`).join("")}</tbody></table>`);
 }
 
 function explorerCases() {
+  const generated = state.data?.explorer?.cases;
+  if (Array.isArray(generated) && generated.length) return generated;
   return [
     {
       type: "Sandwich", tx: "0x9a11d6f86ef06d4bdb95e5815686a0f65b0f1d9a7720af5d954ad7e4ef1bb001", pair: "WETH / USDC", block: { height: 22918482, timestamp: "2026-07-20 15:42:13 UTC", count: 182, position: 41 },
@@ -349,15 +542,14 @@ function activeCase() {
 function activeTransaction() {
   const all = explorerCases();
   const matches = all.filter((entry) => entry.tx === state.currentTxHash);
-  const cases = matches.length ? matches : [all[0]];
-  if (!matches.length) state.currentTxHash = all[0].tx;
+  if (!matches.length) return null;
   return {
     tx: state.currentTxHash,
-    cases,
-    types: cases.map((entry) => entry.type),
-    block: cases[0].block,
-    pair: [...new Set(cases.map((entry) => entry.pair))].join(" + "),
-    summary: cases.map((entry) => entry.summary).join(" ")
+    cases: matches,
+    types: matches.map((entry) => entry.type),
+    block: matches[0].block,
+    pair: [...new Set(matches.map((entry) => entry.pair))].join(" + "),
+    summary: matches.map((entry) => entry.summary).join(" ")
   };
 }
 
@@ -371,6 +563,7 @@ function loadExplorerTx(txHash, preferredType = null) {
 
 function mevExplorer() {
   const tx = activeTransaction();
+  if (!tx) return noExplorerData();
   const current = activeCase();
   const rightView = state.explorerView === "Block Detail" ? blockDetailView(current) : tokenFlowView(current);
   return `
@@ -401,6 +594,18 @@ function mevExplorer() {
         </div>
       </section>
     </div>
+  `;
+}
+
+function noExplorerData() {
+  const label = state.currentTxHash || "No transaction selected";
+  return `
+    ${pageHead("MEV Explorer", "Load a transaction by tx hash, then inspect matching local MEV data.")}
+    <article class="card card-pad">
+      <h3>No MEV Explorer Data</h3>
+      <p class="hash" data-tooltip="${label}">${compact(label)}</p>
+      <p>No matching transaction exists in the local MEV Explorer dataset.</p>
+    </article>
   `;
 }
 
@@ -449,10 +654,10 @@ function blockDetailView(current) {
 
 function entityAnalysis() {
   const profile = activeEntityProfile();
+  if (!profile) return noEntityData();
   const role = state.data.entities.roles[state.entityRole] || state.data.entities.roles[profile.roles[0]];
-  const portfolio = state.data.entities.portfolio;
-  const liquidator = state.data.entities.liquidator;
-  const kpis = state.entityRole === "Liquidator" ? liquidator.kpis : state.entityRole === "Contract Portfolio" ? portfolio.kpis : role.kpis.map((label, i) => ({ label, value: ["$842.1K", "71.4%", "38", "12.6 ETH"][i] || "Ready", delta: state.range }));
+  const kpis = profile.kpis?.length ? profile.kpis : role.kpis.map((label) => ({ label, value: profile.stats?.[label] || "0", delta: state.range }));
+  const builders = profile.builders?.length ? profile.builders : [{ name: "No matched counterparty", accepted: 0, percentage: 0 }];
   return `
     ${pageHead("Entity Analysis", "Load an address from search or clickable address fields, then inspect roles inferred for that address.")}
     ${metrics(kpis)}
@@ -469,9 +674,21 @@ function entityAnalysis() {
         ${chartCard("entityMainChart", `${state.entityRole} View`, `current address: ${compact(profile.address)}`)}
         ${chartCard("entityDistChart", "Profit Distribution", "PDF-style profit bins")}
         ${chartCard("entityTokenChart", state.entityRole === "Liquidator" ? "Liquidator Behaviors" : "Top 10 Favourite Tokens", "dual-axis behavior chart")}
-        ${tableCard("Builder / Relay Acceptance", ["Name", "Accepted", "Percentage"], portfolio.builders, (r) => `<td data-tooltip="${r.name}">${r.name}</td><td>${scaled(r.accepted)}</td><td>${r.percentage}%</td>`)}
+        ${tableCard("Matched Counterparties", ["Address", "Count", "Percentage"], builders, (r) => `<td class="addr" data-jump="address" data-value="${r.name}" data-tooltip="${r.name}">${compact(r.name)}</td><td>${r.accepted}</td><td>${r.percentage}%</td>`)}
       </div>
     </div>
+  `;
+}
+
+function noEntityData() {
+  const label = state.currentAddress || "No address selected";
+  return `
+    ${pageHead("Entity Analysis", "Load an address from search or clickable address fields, then inspect matching local profile data.")}
+    <article class="card card-pad">
+      <h3>No Entity Analysis Data</h3>
+      <p class="addr" data-tooltip="${label}">${compact(label)}</p>
+      <p>No matching address profile exists in the local Entity Analysis dataset.</p>
+    </article>
   `;
 }
 
@@ -504,6 +721,7 @@ function simulatorLab() {
 function bindPageEvents() {
   $$("[data-mode]").forEach((btn) => btn.addEventListener("click", () => { state.chartMode = btn.dataset.mode; render(); }));
   $$("[data-top-tab]").forEach((btn) => btn.addEventListener("click", () => { state.topTab = btn.dataset.topTab; render(); }));
+  bindPagination();
   $$("[data-explorer-view]").forEach((btn) => btn.addEventListener("click", () => { state.explorerView = btn.dataset.explorerView; render(); }));
   $$("tr[data-position]").forEach((row) => row.addEventListener("click", (event) => {
     if (event.target.closest("[data-jump]")) return;
@@ -520,13 +738,30 @@ function bindPageEvents() {
   $("#importSim")?.addEventListener("click", () => {
     const value = $("#simImport").value.trim();
     state.page = "MEV Explorer";
-    const match = explorerCases().find((c) => c.tx === value || String(c.block.height) === value) || explorerCases().find((c) => c.type === $("#simTemplate").value);
+    const match = value
+      ? explorerCases().find((c) => c.tx === value || String(c.block.height) === value)
+      : explorerCases().find((c) => c.type === $("#simTemplate").value);
     if (match) loadExplorerTx(match.tx, match.type);
+    else {
+      state.currentTxHash = value || "";
+      state.explorerType = "";
+      state.selectedPosition = null;
+    }
     render();
   });
   attachTooltips();
   attachCanvasTooltips();
   if ($("#simTemplate")) loadSimTemplate();
+}
+
+function bindPagination() {
+  $$("[data-table-key] [data-page-step]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const key = btn.closest("[data-table-key]").dataset.tableKey;
+      state.tablePage[key] = Math.max(1, (state.tablePage[key] || 1) + Number(btn.dataset.pageStep));
+      render();
+    });
+  });
 }
 
 function jumpTo(kind, value) {
@@ -542,24 +777,37 @@ function jumpTo(kind, value) {
     state.page = "MEV Explorer";
     const match = explorerCases().find((c) => c.tx === value || String(c.block.height) === String(value) || c.type === value);
     if (match) loadExplorerTx(match.tx, match.type);
+    else {
+      state.currentTxHash = value || "";
+      state.explorerType = "";
+      state.selectedPosition = null;
+    }
   }
   render();
 }
 
+function flowKey() {
+  return `${state.currentTxHash}:${state.explorerType}`;
+}
+
 function loadEntityAddress(address) {
   const profile = entityProfiles(address);
-  state.currentAddress = profile.address;
-  state.entityRole = profile.roles[0];
+  state.currentAddress = profile ? profile.address : (address || "");
+  state.entityRole = profile ? profile.roles[0] : "";
 }
 
 function activeEntityProfile() {
   const profile = entityProfiles(state.currentAddress);
+  if (!profile) return null;
   if (!profile.roles.includes(state.entityRole)) state.entityRole = profile.roles[0];
   return profile;
 }
 
 function entityProfiles(address) {
-  const normalized = address || state.data.entities.portfolio.address;
+  const normalized = String(address || "").toLowerCase();
+  if (!normalized) return null;
+  const generated = state.data?.entities?.profiles || {};
+  if (generated[normalized]) return generated[normalized];
   const known = {
     "0x64545160d28Fd0E309277C02D6d73b3923C4bFA": {
       address: "0x64545160d28Fd0E309277C02D6d73b3923C4bFA",
@@ -594,16 +842,8 @@ function entityProfiles(address) {
       stats: { Payloads: "1,204", "Median Bid": "0.18 ETH", Validators: "338", Builders: "42" }
     }
   };
-  if (known[normalized]) return known[normalized];
-  const inferredRole = normalized.toLowerCase().includes("validator") ? "Validator" : normalized.toLowerCase().includes("relay") ? "Relayer" : "Searcher";
-  return {
-    address: normalized,
-    label: "Inferred Address",
-    roles: [inferredRole],
-    risk: "Unknown",
-    summary: "No local profile was found, so the page renders an inferred role view for the searched address using mock data.",
-    stats: { Transactions: "42", Profit: "$8,420", Cost: "$1,260", "First Seen": "mock" }
-  };
+  if (known[address]) return known[address];
+  return null;
 }
 
 function drawCharts() {
@@ -612,7 +852,11 @@ function drawCharts() {
   if ($("#profitDistChart")) drawProfitDistribution("profitDistChart", marketRows().dist);
   if ($("#entityMainChart")) drawPerformance("entityMainChart", marketRows().performance, true);
   if ($("#entityDistChart")) drawProfitDistribution("entityDistChart", marketRows().dist);
-  if ($("#entityTokenChart")) drawBarsLine("entityTokenChart", state.data.entities.portfolio.favoriteTokens.map((r) => ({ ...r, WETH: scaled(r.WETH), count: scaled(r.count) })), "WETH", "count");
+  if ($("#entityTokenChart")) {
+    const profile = activeEntityProfile();
+    const rows = profile?.favoriteTokens?.length ? profile.favoriteTokens : state.data.entities.portfolio.favoriteTokens || [];
+    drawBarsLine("entityTokenChart", rows.map((r) => ({ ...r, WETH: scaled(r.WETH), count: scaled(r.count) })), "WETH", "count");
+  }
   if ($("#simChart")) drawSimChart();
   if ($("#flowSvg")) drawFlow();
 }
@@ -661,44 +905,68 @@ function addPoint(id, x, y, text) {
 
 function drawPie(id, rows, key) {
   const { ctx, w, h } = canvas(id);
-  const total = rows.reduce((sum, row) => sum + row[key], 0);
+  const valueOf = (row) => Math.abs(Number(row[key] || 0));
+  const total = rows.reduce((sum, row) => sum + valueOf(row), 0);
+  const visibleRows = rows.filter((row) => valueOf(row) > 0);
+  const visualTotal = total > 0 ? total : rows.length || 1;
   let start = -Math.PI / 2;
   const cx = w * 0.34, cy = h * 0.5, radius = Math.min(w, h) * 0.3;
-  rows.forEach((row, i) => {
-    const arc = (row[key] / total) * Math.PI * 2;
-    ctx.fillStyle = colors[i];
+  const percentText = (value) => {
+    if (!total || !value) return "0%";
+    const pct = value / total * 100;
+    return pct < 1 ? "<1%" : `${Math.round(pct)}%`;
+  };
+  const pieRows = total > 0 ? visibleRows : rows;
+  pieRows.forEach((row, i) => {
+    const visualValue = total > 0 ? valueOf(row) : 1;
+    const arc = (visualValue / visualTotal) * Math.PI * 2;
+    const color = colors[rows.findIndex((item) => item.type === row.type) % colors.length];
+    ctx.fillStyle = color;
     ctx.beginPath();
     ctx.moveTo(cx, cy);
     ctx.arc(cx, cy, radius, start, start + arc);
     ctx.fill();
     const mid = start + arc / 2;
-    addPoint(id, cx + Math.cos(mid) * radius * 0.65, cy + Math.sin(mid) * radius * 0.65, `${row.type}: ${money(row[key])}`);
+    addPoint(id, cx + Math.cos(mid) * radius * 0.65, cy + Math.sin(mid) * radius * 0.65, `${row.type}: ${money(row[key])} | share ${percentText(visualValue)}`);
     ctx.fillStyle = getCss("--text");
-    ctx.fillText(`${Math.round(row[key] / total * 100)}%`, cx + Math.cos(mid) * radius * 0.72, cy + Math.sin(mid) * radius * 0.72);
+    ctx.fillText(percentText(visualValue), cx + Math.cos(mid) * radius * 0.72, cy + Math.sin(mid) * radius * 0.72);
     start += arc;
+  });
+  rows.forEach((row, i) => {
+    const y = 30 + i * 23;
+    ctx.fillStyle = colors[i % colors.length];
+    ctx.fillRect(w * 0.6, y - 9, 10, 10);
     ctx.fillStyle = getCss("--text");
-    ctx.fillText(`${row.type} ${Math.round(row[key] / total * 100)}%`, w * 0.62, 34 + i * 24);
+    ctx.fillText(`${row.type} ${percentText(valueOf(row))}`, w * 0.6 + 16, y);
+    addPoint(id, w * 0.6 + 5, y - 5, `${row.type}: ${money(row[key])} | visual share ${percentText(valueOf(row))}`);
   });
 }
 
 function drawPerformance(id, rows, entity = false) {
   const { ctx, w, h } = canvas(id);
   const types = state.data.detectors.map((d) => d.type);
-  const max = Math.max(...rows.map((r) => state.chartMode === "volume" ? r.volumeEth : types.reduce((s, t) => s + r[t], 0)));
+  const rowValue = (row, type) => state.chartMode === "volume" ? Number(row[`${type}VolumeEth`] || 0) : Number(row[type] || 0);
+  const rowPositiveTotal = (row) => types.reduce((sum, type) => sum + Math.max(0, rowValue(row, type)), 0);
+  const max = Math.max(1, ...rows.map(rowPositiveTotal)) * 1.18;
   drawAxes(ctx, w, h, max, (value) => state.chartMode === "volume" ? `${shortValue(value)}E` : shortValue(value));
   const step = (w - 74) / rows.length;
   const barW = step * 0.62;
+  const topPad = 18;
+  const bottomY = h - 34;
+  const chartH = h - 70;
   rows.forEach((row, i) => {
     const x = 58 + i * step;
-    let y = h - 34;
+    let y = bottomY;
     types.forEach((type, ci) => {
-      const value = state.chartMode === "volume" ? row.volumeEth / types.length : row[type];
-      const bh = (value / max) * (h - 70);
+      const value = rowValue(row, type);
+      if (value <= 0) return;
+      const bh = Math.min(y - topPad, (value / max) * chartH);
+      if (bh <= 0) return;
       ctx.fillStyle = colors[ci % colors.length];
       ctx.fillRect(x, y - bh, barW, bh);
       if (bh > 18) {
         ctx.fillStyle = "#061713";
-        ctx.fillText(shortValue(value, state.chartMode === "volume" ? " ETH" : ""), x + 4, y - bh + 14);
+        ctx.fillText(shortValue(value, state.chartMode === "volume" ? " ETH" : ""), x + 4, Math.max(topPad + 12, y - bh + 14));
       }
       addPoint(id, x + barW / 2, y - bh / 2, `${row.time} ${type}: ${state.chartMode === "volume" ? `${Math.round(value)} ETH` : money(value)}`);
       y -= bh;
@@ -708,9 +976,10 @@ function drawPerformance(id, rows, entity = false) {
   });
   ctx.strokeStyle = getCss("--accent-2");
   ctx.beginPath();
+  const maxCount = Math.max(1, ...rows.map((r) => Number(r.count || 0)));
   const linePoints = rows.map((row, i) => {
     const x = 58 + i * step + barW / 2;
-    const y = h - 34 - (row.count / Math.max(...rows.map((r) => r.count))) * (h - 70);
+    const y = h - 34 - (Number(row.count || 0) / maxCount) * (h - 70);
     if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
     return { x, y, row, label: row.bin || row.date || i + 1 };
   });
@@ -762,31 +1031,120 @@ function drawBarsLine(id, rows, barKey, lineKey) {
 }
 
 function drawProfitDistribution(id, rows) {
-  const total = rows.reduce((sum, row) => sum + Math.max(0, row.count || 0), 0) || 1;
-  const pdfRows = rows.map((row) => ({
-    ...row,
-    pdf: Math.max(0, row.count || 0) / total
-  }));
   const { ctx, w, h } = canvas(id);
-  drawAxes(ctx, w, h, 1, (value) => value.toFixed(value === 0 || value === 1 ? 0 : 2));
-  const step = (w - 74) / pdfRows.length;
-  pdfRows.forEach((row, i) => {
-    const x = 56 + i * step;
-    const bh = row.pdf * (h - 76);
-    ctx.fillStyle = "#18a8e6";
-    ctx.fillRect(x, h - 34 - bh, step * 0.9, bh);
+  const isVolume = state.chartMode === "volume";
+  const avgKey = isVolume ? "avgVolumeInRange" : "avgProfitInRange";
+  const fallbackAvgKey = isVolume ? "avgVolumeEth" : "avgProfit";
+  const avgLabel = isVolume ? "Avg Volume in range" : "Avg Profit in range";
+  const avgFormatter = (value) => isVolume ? `${Number(value).toLocaleString(undefined, { maximumFractionDigits: 6 })} ETH` : money(value);
+  const left = 48;
+  const right = w - 54;
+  const top = 18;
+  const bottom = h - 42;
+  const chartW = Math.max(1, right - left);
+  const chartH = Math.max(1, bottom - top);
+  const maxCount = Math.max(1, ...rows.map((row) => Number(row.txCountInRange ?? row.count ?? 0)));
+  const avgValues = rows.map((row) => Number(row[avgKey] ?? row[fallbackAvgKey] ?? 0));
+  const minAvg = Math.min(0, ...avgValues);
+  const maxAvg = Math.max(1, ...avgValues);
+  const avgRange = Math.max(1, maxAvg - minAvg);
+  const avgY = (value) => bottom - ((value - minAvg) / avgRange) * chartH;
+  const countY = (value) => bottom - (value / maxCount) * chartH;
+  const zeroY = avgY(0);
+  const step = chartW / rows.length;
+  const barW = Math.max(8, step * 0.52);
+
+  ctx.strokeStyle = getCss("--line");
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(left, top);
+  ctx.lineTo(left, bottom);
+  ctx.lineTo(right, bottom);
+  ctx.moveTo(right, top);
+  ctx.lineTo(right, bottom);
+  ctx.stroke();
+
+  ctx.font = "11px Inter, sans-serif";
+  for (let i = 0; i <= 4; i += 1) {
+    const countValue = (maxCount / 4) * i;
+    const y = countY(countValue);
+    ctx.strokeStyle = i === 0 ? getCss("--line") : colorMixLine();
+    ctx.beginPath();
+    ctx.moveTo(left, y);
+    ctx.lineTo(right, y);
+    ctx.stroke();
     ctx.fillStyle = getCss("--muted");
-    ctx.fillText(row.bin, x, h - 12);
+    ctx.textAlign = "right";
+    ctx.fillText(shortValue(countValue), left - 8, y + 4);
+    const avgValue = minAvg + (avgRange / 4) * i;
+    ctx.textAlign = "left";
+    ctx.fillStyle = getCss("--accent");
+    ctx.fillText(shortValue(avgValue), right + 8, avgY(avgValue) + 4);
+  }
+
+  ctx.strokeStyle = colorMixLine();
+  ctx.beginPath();
+  ctx.moveTo(left, zeroY);
+  ctx.lineTo(right, zeroY);
+  ctx.stroke();
+
+  rows.forEach((row, i) => {
+    const x = left + i * step + (step - barW) / 2;
+    const avgValue = Number(row[avgKey] ?? row[fallbackAvgKey] ?? 0);
+    const y = avgY(avgValue);
+    const barTop = Math.min(y, zeroY);
+    const barH = Math.max(1, Math.abs(zeroY - y));
+    ctx.fillStyle = avgValue < 0 ? getCss("--danger") : getCss("--accent");
+    ctx.globalAlpha = 0.72;
+    ctx.fillRect(x, barTop, barW, barH);
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = getCss("--muted");
+    ctx.textAlign = "center";
+    ctx.fillText(row.bin, x + barW / 2, h - 14);
     ctx.fillStyle = getCss("--text");
-    ctx.fillText(row.pdf.toFixed(2), x + 2, Math.max(22, h - 40 - bh));
-    addPoint(id, x + step * 0.45, h - 34 - bh / 2, `${row.bin}: PDF ${row.pdf.toFixed(4)} | Count ${row.count.toLocaleString()} | Avg ${money(row.avgProfit)}`);
+    ctx.fillText(avgFormatter(avgValue), x + barW / 2, Math.max(top + 12, barTop - 5));
+    addPoint(id, x + barW / 2, barTop + barH / 2, `${row.bin}: ${avgLabel} ${avgFormatter(avgValue)} | Tx count in range ${Number(row.txCountInRange ?? row.count ?? 0).toLocaleString()}`);
   });
+
+  ctx.strokeStyle = getCss("--blue");
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  const linePoints = rows.map((row, i) => {
+    const count = Number(row.txCountInRange ?? row.count ?? 0);
+    const x = left + i * step + step / 2;
+    const y = countY(count);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    return { x, y, count, row };
+  });
+  ctx.stroke();
+  linePoints.forEach(({ x, y, count, row }) => {
+    ctx.fillStyle = getCss("--blue");
+    ctx.beginPath();
+    ctx.arc(x, y, 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = getCss("--text");
+    ctx.textAlign = "left";
+    ctx.fillText(shortValue(count), x + 6, y - 7);
+    addPoint(id, x, y, `${row.bin}: Tx count in range ${count.toLocaleString()} | ${avgLabel} ${avgFormatter(row[avgKey] ?? row[fallbackAvgKey] ?? 0)}`);
+  });
+
+  ctx.fillStyle = getCss("--muted");
+  ctx.textAlign = "left";
+  ctx.fillText(avgLabel, left, top + 4);
+  ctx.fillStyle = getCss("--blue");
+  ctx.fillText("Tx count in range", left + 132, top + 4);
   ctx.fillStyle = getCss("--muted");
   ctx.save();
-  ctx.translate(14, h / 2 + 70);
+  ctx.translate(14, h / 2 + 64);
   ctx.rotate(-Math.PI / 2);
-  ctx.fillText("PDF of Transaction Profit", 0, 0);
+  ctx.fillText("Transaction count", 0, 0);
   ctx.restore();
+  ctx.save();
+  ctx.translate(w - 14, h / 2 + 52);
+  ctx.rotate(-Math.PI / 2);
+  ctx.fillText(isVolume ? "Average volume" : "Average profit", 0, 0);
+  ctx.restore();
+  ctx.textAlign = "left";
 }
 
 function drawFlow(highlightIndex = -1) {
@@ -796,11 +1154,14 @@ function drawFlow(highlightIndex = -1) {
   const width = svg.clientWidth || 900;
   const height = svg.clientHeight || 520;
   const ids = data.nodes.map((n) => n.id);
-  const pos = {};
+  const key = flowKey();
+  const pos = state.flowPositions[key] || {};
   ids.forEach((id, i) => {
+    if (pos[id]) return;
     const angle = -Math.PI / 2 + (i / ids.length) * Math.PI * 2;
     pos[id] = [width * 0.5 + Math.cos(angle) * width * 0.32, height * 0.5 + Math.sin(angle) * height * 0.28];
   });
+  state.flowPositions[key] = pos;
   const r = Math.max(26, Math.min(36, width / 28));
   svg.innerHTML = `
     <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="${getCss("--accent")}"/></marker></defs>
@@ -830,7 +1191,7 @@ function drawFlow(highlightIndex = -1) {
     }).join("")}
     ${data.nodes.map((node, i) => {
       const [x, y] = pos[node.id];
-      return `<g class="flow-node" data-tooltip="${node.label} | ${node.address} | ${node.roles.join(", ")}" data-detail="${node.label} | ${node.address} | ${node.roles.join(", ")}"><circle cx="${x}" cy="${y}" r="${r}" fill="${colors[i % colors.length]}" opacity="0.92"/><text x="${x}" y="${y + 4}" text-anchor="middle" fill="#051814" font-size="12" font-weight="800">${node.label}</text><text x="${x}" y="${y + r + 18}" text-anchor="middle" fill="${getCss("--muted")}" font-size="12">${node.address}</text></g>`;
+      return `<g class="flow-node" data-node-id="${node.id}" data-tooltip="${node.label} | ${node.address} | ${node.roles.join(", ")}" data-detail="${node.label} | ${node.address} | ${node.roles.join(", ")}"><circle cx="${x}" cy="${y}" r="${r}" fill="${colors[i % colors.length]}" opacity="0.92"/><text x="${x}" y="${y + 4}" text-anchor="middle" fill="#051814" font-size="12" font-weight="800">${node.label}</text><text x="${x}" y="${y + r + 18}" text-anchor="middle" fill="${getCss("--muted")}" font-size="12">${node.address}</text></g>`;
     }).join("")}
   `;
   svg.querySelectorAll("[data-detail]").forEach((el) => {
@@ -842,6 +1203,46 @@ function drawFlow(highlightIndex = -1) {
     el.addEventListener("mousemove", showTooltip);
     el.addEventListener("mouseleave", hideTooltip);
   });
+  attachFlowDrag(svg);
+}
+
+function attachFlowDrag(svg) {
+  svg.querySelectorAll(".flow-node").forEach((nodeEl) => {
+    nodeEl.addEventListener("pointerdown", (event) => {
+      event.preventDefault();
+      hideTooltip();
+      const point = svgPoint(svg, event);
+      const id = nodeEl.dataset.nodeId;
+      const pos = state.flowPositions[flowKey()];
+      const [x, y] = pos[id];
+      state.draggingNode = { id, offsetX: x - point.x, offsetY: y - point.y };
+      nodeEl.classList.add("dragging");
+      nodeEl.setPointerCapture(event.pointerId);
+    });
+  });
+  svg.onpointermove = (event) => {
+    if (!state.draggingNode) return;
+    const point = svgPoint(svg, event);
+    const pos = state.flowPositions[flowKey()];
+    const pad = 46;
+    pos[state.draggingNode.id] = [
+      Math.max(pad, Math.min(svg.clientWidth - pad, point.x + state.draggingNode.offsetX)),
+      Math.max(pad, Math.min(svg.clientHeight - pad, point.y + state.draggingNode.offsetY))
+    ];
+    drawFlow();
+  };
+  svg.onpointerup = () => {
+    state.draggingNode = null;
+    svg.querySelectorAll(".flow-node.dragging").forEach((el) => el.classList.remove("dragging"));
+  };
+  svg.onpointerleave = () => {
+    state.draggingNode = null;
+  };
+}
+
+function svgPoint(svg, event) {
+  const rect = svg.getBoundingClientRect();
+  return { x: event.clientX - rect.left, y: event.clientY - rect.top };
 }
 
 function playFlow() {

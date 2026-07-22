@@ -1,36 +1,510 @@
 {
   "chart": "MEV Profit Distribution",
   "type": "bar-line",
+  "ranges": {
+    "1H": [
+      {
+        "bin": "<$0",
+        "count": 3232,
+        "txCountInRange": 3232,
+        "avgProfit": -2452.28,
+        "avgProfitInRange": -2452.28
+      },
+      {
+        "bin": "$0-$1",
+        "count": 391,
+        "txCountInRange": 391,
+        "avgProfit": 0.12,
+        "avgProfitInRange": 0.12
+      },
+      {
+        "bin": "$1-$10",
+        "count": 159,
+        "txCountInRange": 159,
+        "avgProfit": 5.62,
+        "avgProfitInRange": 5.62
+      },
+      {
+        "bin": "$10-$100",
+        "count": 603,
+        "txCountInRange": 603,
+        "avgProfit": 53.08,
+        "avgProfitInRange": 53.08
+      },
+      {
+        "bin": "$100-$1K",
+        "count": 895,
+        "txCountInRange": 895,
+        "avgProfit": 324.7,
+        "avgProfitInRange": 324.7
+      },
+      {
+        "bin": "$1K-$10K",
+        "count": 149,
+        "txCountInRange": 149,
+        "avgProfit": 2586.75,
+        "avgProfitInRange": 2586.75
+      },
+      {
+        "bin": "$10K-$100K",
+        "count": 11,
+        "txCountInRange": 11,
+        "avgProfit": 16662.85,
+        "avgProfitInRange": 16662.85
+      },
+      {
+        "bin": "$100K-$1M",
+        "count": 6,
+        "txCountInRange": 6,
+        "avgProfit": 309739.63,
+        "avgProfitInRange": 309739.63
+      },
+      {
+        "bin": "$1M-$10M",
+        "count": 3,
+        "txCountInRange": 3,
+        "avgProfit": 2185071.78,
+        "avgProfitInRange": 2185071.78
+      },
+      {
+        "bin": "$10M+",
+        "count": 0,
+        "txCountInRange": 0,
+        "avgProfit": 0.0,
+        "avgProfitInRange": 0.0
+      }
+    ],
+    "24H": [
+      {
+        "bin": "<$0",
+        "count": 3250,
+        "txCountInRange": 3250,
+        "avgProfit": -2442.48,
+        "avgProfitInRange": -2442.48
+      },
+      {
+        "bin": "$0-$1",
+        "count": 393,
+        "txCountInRange": 393,
+        "avgProfit": 0.12,
+        "avgProfitInRange": 0.12
+      },
+      {
+        "bin": "$1-$10",
+        "count": 159,
+        "txCountInRange": 159,
+        "avgProfit": 5.62,
+        "avgProfitInRange": 5.62
+      },
+      {
+        "bin": "$10-$100",
+        "count": 606,
+        "txCountInRange": 606,
+        "avgProfit": 53.1,
+        "avgProfitInRange": 53.1
+      },
+      {
+        "bin": "$100-$1K",
+        "count": 896,
+        "txCountInRange": 896,
+        "avgProfit": 324.51,
+        "avgProfitInRange": 324.51
+      },
+      {
+        "bin": "$1K-$10K",
+        "count": 149,
+        "txCountInRange": 149,
+        "avgProfit": 2586.75,
+        "avgProfitInRange": 2586.75
+      },
+      {
+        "bin": "$10K-$100K",
+        "count": 11,
+        "txCountInRange": 11,
+        "avgProfit": 16662.85,
+        "avgProfitInRange": 16662.85
+      },
+      {
+        "bin": "$100K-$1M",
+        "count": 6,
+        "txCountInRange": 6,
+        "avgProfit": 309739.63,
+        "avgProfitInRange": 309739.63
+      },
+      {
+        "bin": "$1M-$10M",
+        "count": 3,
+        "txCountInRange": 3,
+        "avgProfit": 2185071.78,
+        "avgProfitInRange": 2185071.78
+      },
+      {
+        "bin": "$10M+",
+        "count": 0,
+        "txCountInRange": 0,
+        "avgProfit": 0.0,
+        "avgProfitInRange": 0.0
+      }
+    ],
+    "7D": [
+      {
+        "bin": "<$0",
+        "count": 3250,
+        "txCountInRange": 3250,
+        "avgProfit": -2442.48,
+        "avgProfitInRange": -2442.48
+      },
+      {
+        "bin": "$0-$1",
+        "count": 393,
+        "txCountInRange": 393,
+        "avgProfit": 0.12,
+        "avgProfitInRange": 0.12
+      },
+      {
+        "bin": "$1-$10",
+        "count": 159,
+        "txCountInRange": 159,
+        "avgProfit": 5.62,
+        "avgProfitInRange": 5.62
+      },
+      {
+        "bin": "$10-$100",
+        "count": 606,
+        "txCountInRange": 606,
+        "avgProfit": 53.1,
+        "avgProfitInRange": 53.1
+      },
+      {
+        "bin": "$100-$1K",
+        "count": 896,
+        "txCountInRange": 896,
+        "avgProfit": 324.51,
+        "avgProfitInRange": 324.51
+      },
+      {
+        "bin": "$1K-$10K",
+        "count": 149,
+        "txCountInRange": 149,
+        "avgProfit": 2586.75,
+        "avgProfitInRange": 2586.75
+      },
+      {
+        "bin": "$10K-$100K",
+        "count": 11,
+        "txCountInRange": 11,
+        "avgProfit": 16662.85,
+        "avgProfitInRange": 16662.85
+      },
+      {
+        "bin": "$100K-$1M",
+        "count": 6,
+        "txCountInRange": 6,
+        "avgProfit": 309739.63,
+        "avgProfitInRange": 309739.63
+      },
+      {
+        "bin": "$1M-$10M",
+        "count": 3,
+        "txCountInRange": 3,
+        "avgProfit": 2185071.78,
+        "avgProfitInRange": 2185071.78
+      },
+      {
+        "bin": "$10M+",
+        "count": 0,
+        "txCountInRange": 0,
+        "avgProfit": 0.0,
+        "avgProfitInRange": 0.0
+      }
+    ],
+    "30D": [
+      {
+        "bin": "<$0",
+        "count": 3250,
+        "txCountInRange": 3250,
+        "avgProfit": -2442.48,
+        "avgProfitInRange": -2442.48
+      },
+      {
+        "bin": "$0-$1",
+        "count": 393,
+        "txCountInRange": 393,
+        "avgProfit": 0.12,
+        "avgProfitInRange": 0.12
+      },
+      {
+        "bin": "$1-$10",
+        "count": 159,
+        "txCountInRange": 159,
+        "avgProfit": 5.62,
+        "avgProfitInRange": 5.62
+      },
+      {
+        "bin": "$10-$100",
+        "count": 606,
+        "txCountInRange": 606,
+        "avgProfit": 53.1,
+        "avgProfitInRange": 53.1
+      },
+      {
+        "bin": "$100-$1K",
+        "count": 896,
+        "txCountInRange": 896,
+        "avgProfit": 324.51,
+        "avgProfitInRange": 324.51
+      },
+      {
+        "bin": "$1K-$10K",
+        "count": 149,
+        "txCountInRange": 149,
+        "avgProfit": 2586.75,
+        "avgProfitInRange": 2586.75
+      },
+      {
+        "bin": "$10K-$100K",
+        "count": 11,
+        "txCountInRange": 11,
+        "avgProfit": 16662.85,
+        "avgProfitInRange": 16662.85
+      },
+      {
+        "bin": "$100K-$1M",
+        "count": 6,
+        "txCountInRange": 6,
+        "avgProfit": 309739.63,
+        "avgProfitInRange": 309739.63
+      },
+      {
+        "bin": "$1M-$10M",
+        "count": 3,
+        "txCountInRange": 3,
+        "avgProfit": 2185071.78,
+        "avgProfitInRange": 2185071.78
+      },
+      {
+        "bin": "$10M+",
+        "count": 0,
+        "txCountInRange": 0,
+        "avgProfit": 0.0,
+        "avgProfitInRange": 0.0
+      }
+    ],
+    "90D": [
+      {
+        "bin": "<$0",
+        "count": 3250,
+        "txCountInRange": 3250,
+        "avgProfit": -2442.48,
+        "avgProfitInRange": -2442.48
+      },
+      {
+        "bin": "$0-$1",
+        "count": 393,
+        "txCountInRange": 393,
+        "avgProfit": 0.12,
+        "avgProfitInRange": 0.12
+      },
+      {
+        "bin": "$1-$10",
+        "count": 159,
+        "txCountInRange": 159,
+        "avgProfit": 5.62,
+        "avgProfitInRange": 5.62
+      },
+      {
+        "bin": "$10-$100",
+        "count": 606,
+        "txCountInRange": 606,
+        "avgProfit": 53.1,
+        "avgProfitInRange": 53.1
+      },
+      {
+        "bin": "$100-$1K",
+        "count": 896,
+        "txCountInRange": 896,
+        "avgProfit": 324.51,
+        "avgProfitInRange": 324.51
+      },
+      {
+        "bin": "$1K-$10K",
+        "count": 149,
+        "txCountInRange": 149,
+        "avgProfit": 2586.75,
+        "avgProfitInRange": 2586.75
+      },
+      {
+        "bin": "$10K-$100K",
+        "count": 11,
+        "txCountInRange": 11,
+        "avgProfit": 16662.85,
+        "avgProfitInRange": 16662.85
+      },
+      {
+        "bin": "$100K-$1M",
+        "count": 6,
+        "txCountInRange": 6,
+        "avgProfit": 309739.63,
+        "avgProfitInRange": 309739.63
+      },
+      {
+        "bin": "$1M-$10M",
+        "count": 3,
+        "txCountInRange": 3,
+        "avgProfit": 2185071.78,
+        "avgProfitInRange": 2185071.78
+      },
+      {
+        "bin": "$10M+",
+        "count": 0,
+        "txCountInRange": 0,
+        "avgProfit": 0.0,
+        "avgProfitInRange": 0.0
+      }
+    ],
+    "1Y": [
+      {
+        "bin": "<$0",
+        "count": 3250,
+        "txCountInRange": 3250,
+        "avgProfit": -2442.48,
+        "avgProfitInRange": -2442.48
+      },
+      {
+        "bin": "$0-$1",
+        "count": 393,
+        "txCountInRange": 393,
+        "avgProfit": 0.12,
+        "avgProfitInRange": 0.12
+      },
+      {
+        "bin": "$1-$10",
+        "count": 159,
+        "txCountInRange": 159,
+        "avgProfit": 5.62,
+        "avgProfitInRange": 5.62
+      },
+      {
+        "bin": "$10-$100",
+        "count": 606,
+        "txCountInRange": 606,
+        "avgProfit": 53.1,
+        "avgProfitInRange": 53.1
+      },
+      {
+        "bin": "$100-$1K",
+        "count": 896,
+        "txCountInRange": 896,
+        "avgProfit": 324.51,
+        "avgProfitInRange": 324.51
+      },
+      {
+        "bin": "$1K-$10K",
+        "count": 149,
+        "txCountInRange": 149,
+        "avgProfit": 2586.75,
+        "avgProfitInRange": 2586.75
+      },
+      {
+        "bin": "$10K-$100K",
+        "count": 11,
+        "txCountInRange": 11,
+        "avgProfit": 16662.85,
+        "avgProfitInRange": 16662.85
+      },
+      {
+        "bin": "$100K-$1M",
+        "count": 6,
+        "txCountInRange": 6,
+        "avgProfit": 309739.63,
+        "avgProfitInRange": 309739.63
+      },
+      {
+        "bin": "$1M-$10M",
+        "count": 3,
+        "txCountInRange": 3,
+        "avgProfit": 2185071.78,
+        "avgProfitInRange": 2185071.78
+      },
+      {
+        "bin": "$10M+",
+        "count": 0,
+        "txCountInRange": 0,
+        "avgProfit": 0.0,
+        "avgProfitInRange": 0.0
+      }
+    ]
+  },
   "rows": [
     {
-      "bin": "-100k~-10k",
-      "count": 28,
-      "avgProfit": -28400
+      "bin": "<$0",
+      "count": 3250,
+      "txCountInRange": 3250,
+      "avgProfit": -2442.48,
+      "avgProfitInRange": -2442.48
     },
     {
-      "bin": "-10k~0",
-      "count": 135,
-      "avgProfit": -2400
+      "bin": "$0-$1",
+      "count": 393,
+      "txCountInRange": 393,
+      "avgProfit": 0.12,
+      "avgProfitInRange": 0.12
     },
     {
-      "bin": "0~1k",
-      "count": 3820,
-      "avgProfit": 216
+      "bin": "$1-$10",
+      "count": 159,
+      "txCountInRange": 159,
+      "avgProfit": 5.62,
+      "avgProfitInRange": 5.62
     },
     {
-      "bin": "1k~10k",
-      "count": 1890,
-      "avgProfit": 3840
+      "bin": "$10-$100",
+      "count": 606,
+      "txCountInRange": 606,
+      "avgProfit": 53.1,
+      "avgProfitInRange": 53.1
     },
     {
-      "bin": "10k~100k",
-      "count": 328,
-      "avgProfit": 28400
+      "bin": "$100-$1K",
+      "count": 896,
+      "txCountInRange": 896,
+      "avgProfit": 324.51,
+      "avgProfitInRange": 324.51
     },
     {
-      "bin": "100k+",
-      "count": 18,
-      "avgProfit": 186000
+      "bin": "$1K-$10K",
+      "count": 149,
+      "txCountInRange": 149,
+      "avgProfit": 2586.75,
+      "avgProfitInRange": 2586.75
+    },
+    {
+      "bin": "$10K-$100K",
+      "count": 11,
+      "txCountInRange": 11,
+      "avgProfit": 16662.85,
+      "avgProfitInRange": 16662.85
+    },
+    {
+      "bin": "$100K-$1M",
+      "count": 6,
+      "txCountInRange": 6,
+      "avgProfit": 309739.63,
+      "avgProfitInRange": 309739.63
+    },
+    {
+      "bin": "$1M-$10M",
+      "count": 3,
+      "txCountInRange": 3,
+      "avgProfit": 2185071.78,
+      "avgProfitInRange": 2185071.78
+    },
+    {
+      "bin": "$10M+",
+      "count": 0,
+      "txCountInRange": 0,
+      "avgProfit": 0.0,
+      "avgProfitInRange": 0.0
     }
   ]
 }

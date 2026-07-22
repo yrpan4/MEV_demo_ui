@@ -1,0 +1,461 @@
+{
+  "chart": "MEV Volume Distribution",
+  "type": "bar-line",
+  "ranges": {
+    "1H": [
+      {
+        "bin": "0-0.01 ETH",
+        "count": 505,
+        "txCountInRange": 505,
+        "avgVolumeEth": 0.003963,
+        "avgVolumeInRange": 0.003963
+      },
+      {
+        "bin": "0.01-0.1 ETH",
+        "count": 1755,
+        "txCountInRange": 1755,
+        "avgVolumeEth": 0.046351,
+        "avgVolumeInRange": 0.046351
+      },
+      {
+        "bin": "0.1-1 ETH",
+        "count": 2185,
+        "txCountInRange": 2185,
+        "avgVolumeEth": 0.372493,
+        "avgVolumeInRange": 0.372493
+      },
+      {
+        "bin": "1-10 ETH",
+        "count": 770,
+        "txCountInRange": 770,
+        "avgVolumeEth": 3.038575,
+        "avgVolumeInRange": 3.038575
+      },
+      {
+        "bin": "10-100 ETH",
+        "count": 171,
+        "txCountInRange": 171,
+        "avgVolumeEth": 32.134485,
+        "avgVolumeInRange": 32.134485
+      },
+      {
+        "bin": "100-1K ETH",
+        "count": 29,
+        "txCountInRange": 29,
+        "avgVolumeEth": 318.176657,
+        "avgVolumeInRange": 318.176657
+      },
+      {
+        "bin": "1K-10K ETH",
+        "count": 16,
+        "txCountInRange": 16,
+        "avgVolumeEth": 1544.894211,
+        "avgVolumeInRange": 1544.894211
+      },
+      {
+        "bin": "10K-100K ETH",
+        "count": 11,
+        "txCountInRange": 11,
+        "avgVolumeEth": 27529.301998,
+        "avgVolumeInRange": 27529.301998
+      },
+      {
+        "bin": "100K+ ETH",
+        "count": 7,
+        "txCountInRange": 7,
+        "avgVolumeEth": 106763.125854,
+        "avgVolumeInRange": 106763.125854
+      }
+    ],
+    "24H": [
+      {
+        "bin": "0-0.01 ETH",
+        "count": 510,
+        "txCountInRange": 510,
+        "avgVolumeEth": 0.003955,
+        "avgVolumeInRange": 0.003955
+      },
+      {
+        "bin": "0.01-0.1 ETH",
+        "count": 1763,
+        "txCountInRange": 1763,
+        "avgVolumeEth": 0.046466,
+        "avgVolumeInRange": 0.046466
+      },
+      {
+        "bin": "0.1-1 ETH",
+        "count": 2192,
+        "txCountInRange": 2192,
+        "avgVolumeEth": 0.372479,
+        "avgVolumeInRange": 0.372479
+      },
+      {
+        "bin": "1-10 ETH",
+        "count": 774,
+        "txCountInRange": 774,
+        "avgVolumeEth": 3.037237,
+        "avgVolumeInRange": 3.037237
+      },
+      {
+        "bin": "10-100 ETH",
+        "count": 171,
+        "txCountInRange": 171,
+        "avgVolumeEth": 32.134485,
+        "avgVolumeInRange": 32.134485
+      },
+      {
+        "bin": "100-1K ETH",
+        "count": 29,
+        "txCountInRange": 29,
+        "avgVolumeEth": 318.176657,
+        "avgVolumeInRange": 318.176657
+      },
+      {
+        "bin": "1K-10K ETH",
+        "count": 16,
+        "txCountInRange": 16,
+        "avgVolumeEth": 1544.894211,
+        "avgVolumeInRange": 1544.894211
+      },
+      {
+        "bin": "10K-100K ETH",
+        "count": 11,
+        "txCountInRange": 11,
+        "avgVolumeEth": 27529.301998,
+        "avgVolumeInRange": 27529.301998
+      },
+      {
+        "bin": "100K+ ETH",
+        "count": 7,
+        "txCountInRange": 7,
+        "avgVolumeEth": 106763.125854,
+        "avgVolumeInRange": 106763.125854
+      }
+    ],
+    "7D": [
+      {
+        "bin": "0-0.01 ETH",
+        "count": 510,
+        "txCountInRange": 510,
+        "avgVolumeEth": 0.003955,
+        "avgVolumeInRange": 0.003955
+      },
+      {
+        "bin": "0.01-0.1 ETH",
+        "count": 1763,
+        "txCountInRange": 1763,
+        "avgVolumeEth": 0.046466,
+        "avgVolumeInRange": 0.046466
+      },
+      {
+        "bin": "0.1-1 ETH",
+        "count": 2192,
+        "txCountInRange": 2192,
+        "avgVolumeEth": 0.372479,
+        "avgVolumeInRange": 0.372479
+      },
+      {
+        "bin": "1-10 ETH",
+        "count": 774,
+        "txCountInRange": 774,
+        "avgVolumeEth": 3.037237,
+        "avgVolumeInRange": 3.037237
+      },
+      {
+        "bin": "10-100 ETH",
+        "count": 171,
+        "txCountInRange": 171,
+        "avgVolumeEth": 32.134485,
+        "avgVolumeInRange": 32.134485
+      },
+      {
+        "bin": "100-1K ETH",
+        "count": 29,
+        "txCountInRange": 29,
+        "avgVolumeEth": 318.176657,
+        "avgVolumeInRange": 318.176657
+      },
+      {
+        "bin": "1K-10K ETH",
+        "count": 16,
+        "txCountInRange": 16,
+        "avgVolumeEth": 1544.894211,
+        "avgVolumeInRange": 1544.894211
+      },
+      {
+        "bin": "10K-100K ETH",
+        "count": 11,
+        "txCountInRange": 11,
+        "avgVolumeEth": 27529.301998,
+        "avgVolumeInRange": 27529.301998
+      },
+      {
+        "bin": "100K+ ETH",
+        "count": 7,
+        "txCountInRange": 7,
+        "avgVolumeEth": 106763.125854,
+        "avgVolumeInRange": 106763.125854
+      }
+    ],
+    "30D": [
+      {
+        "bin": "0-0.01 ETH",
+        "count": 510,
+        "txCountInRange": 510,
+        "avgVolumeEth": 0.003955,
+        "avgVolumeInRange": 0.003955
+      },
+      {
+        "bin": "0.01-0.1 ETH",
+        "count": 1763,
+        "txCountInRange": 1763,
+        "avgVolumeEth": 0.046466,
+        "avgVolumeInRange": 0.046466
+      },
+      {
+        "bin": "0.1-1 ETH",
+        "count": 2192,
+        "txCountInRange": 2192,
+        "avgVolumeEth": 0.372479,
+        "avgVolumeInRange": 0.372479
+      },
+      {
+        "bin": "1-10 ETH",
+        "count": 774,
+        "txCountInRange": 774,
+        "avgVolumeEth": 3.037237,
+        "avgVolumeInRange": 3.037237
+      },
+      {
+        "bin": "10-100 ETH",
+        "count": 171,
+        "txCountInRange": 171,
+        "avgVolumeEth": 32.134485,
+        "avgVolumeInRange": 32.134485
+      },
+      {
+        "bin": "100-1K ETH",
+        "count": 29,
+        "txCountInRange": 29,
+        "avgVolumeEth": 318.176657,
+        "avgVolumeInRange": 318.176657
+      },
+      {
+        "bin": "1K-10K ETH",
+        "count": 16,
+        "txCountInRange": 16,
+        "avgVolumeEth": 1544.894211,
+        "avgVolumeInRange": 1544.894211
+      },
+      {
+        "bin": "10K-100K ETH",
+        "count": 11,
+        "txCountInRange": 11,
+        "avgVolumeEth": 27529.301998,
+        "avgVolumeInRange": 27529.301998
+      },
+      {
+        "bin": "100K+ ETH",
+        "count": 7,
+        "txCountInRange": 7,
+        "avgVolumeEth": 106763.125854,
+        "avgVolumeInRange": 106763.125854
+      }
+    ],
+    "90D": [
+      {
+        "bin": "0-0.01 ETH",
+        "count": 510,
+        "txCountInRange": 510,
+        "avgVolumeEth": 0.003955,
+        "avgVolumeInRange": 0.003955
+      },
+      {
+        "bin": "0.01-0.1 ETH",
+        "count": 1763,
+        "txCountInRange": 1763,
+        "avgVolumeEth": 0.046466,
+        "avgVolumeInRange": 0.046466
+      },
+      {
+        "bin": "0.1-1 ETH",
+        "count": 2192,
+        "txCountInRange": 2192,
+        "avgVolumeEth": 0.372479,
+        "avgVolumeInRange": 0.372479
+      },
+      {
+        "bin": "1-10 ETH",
+        "count": 774,
+        "txCountInRange": 774,
+        "avgVolumeEth": 3.037237,
+        "avgVolumeInRange": 3.037237
+      },
+      {
+        "bin": "10-100 ETH",
+        "count": 171,
+        "txCountInRange": 171,
+        "avgVolumeEth": 32.134485,
+        "avgVolumeInRange": 32.134485
+      },
+      {
+        "bin": "100-1K ETH",
+        "count": 29,
+        "txCountInRange": 29,
+        "avgVolumeEth": 318.176657,
+        "avgVolumeInRange": 318.176657
+      },
+      {
+        "bin": "1K-10K ETH",
+        "count": 16,
+        "txCountInRange": 16,
+        "avgVolumeEth": 1544.894211,
+        "avgVolumeInRange": 1544.894211
+      },
+      {
+        "bin": "10K-100K ETH",
+        "count": 11,
+        "txCountInRange": 11,
+        "avgVolumeEth": 27529.301998,
+        "avgVolumeInRange": 27529.301998
+      },
+      {
+        "bin": "100K+ ETH",
+        "count": 7,
+        "txCountInRange": 7,
+        "avgVolumeEth": 106763.125854,
+        "avgVolumeInRange": 106763.125854
+      }
+    ],
+    "1Y": [
+      {
+        "bin": "0-0.01 ETH",
+        "count": 510,
+        "txCountInRange": 510,
+        "avgVolumeEth": 0.003955,
+        "avgVolumeInRange": 0.003955
+      },
+      {
+        "bin": "0.01-0.1 ETH",
+        "count": 1763,
+        "txCountInRange": 1763,
+        "avgVolumeEth": 0.046466,
+        "avgVolumeInRange": 0.046466
+      },
+      {
+        "bin": "0.1-1 ETH",
+        "count": 2192,
+        "txCountInRange": 2192,
+        "avgVolumeEth": 0.372479,
+        "avgVolumeInRange": 0.372479
+      },
+      {
+        "bin": "1-10 ETH",
+        "count": 774,
+        "txCountInRange": 774,
+        "avgVolumeEth": 3.037237,
+        "avgVolumeInRange": 3.037237
+      },
+      {
+        "bin": "10-100 ETH",
+        "count": 171,
+        "txCountInRange": 171,
+        "avgVolumeEth": 32.134485,
+        "avgVolumeInRange": 32.134485
+      },
+      {
+        "bin": "100-1K ETH",
+        "count": 29,
+        "txCountInRange": 29,
+        "avgVolumeEth": 318.176657,
+        "avgVolumeInRange": 318.176657
+      },
+      {
+        "bin": "1K-10K ETH",
+        "count": 16,
+        "txCountInRange": 16,
+        "avgVolumeEth": 1544.894211,
+        "avgVolumeInRange": 1544.894211
+      },
+      {
+        "bin": "10K-100K ETH",
+        "count": 11,
+        "txCountInRange": 11,
+        "avgVolumeEth": 27529.301998,
+        "avgVolumeInRange": 27529.301998
+      },
+      {
+        "bin": "100K+ ETH",
+        "count": 7,
+        "txCountInRange": 7,
+        "avgVolumeEth": 106763.125854,
+        "avgVolumeInRange": 106763.125854
+      }
+    ]
+  },
+  "rows": [
+    {
+      "bin": "0-0.01 ETH",
+      "count": 510,
+      "txCountInRange": 510,
+      "avgVolumeEth": 0.003955,
+      "avgVolumeInRange": 0.003955
+    },
+    {
+      "bin": "0.01-0.1 ETH",
+      "count": 1763,
+      "txCountInRange": 1763,
+      "avgVolumeEth": 0.046466,
+      "avgVolumeInRange": 0.046466
+    },
+    {
+      "bin": "0.1-1 ETH",
+      "count": 2192,
+      "txCountInRange": 2192,
+      "avgVolumeEth": 0.372479,
+      "avgVolumeInRange": 0.372479
+    },
+    {
+      "bin": "1-10 ETH",
+      "count": 774,
+      "txCountInRange": 774,
+      "avgVolumeEth": 3.037237,
+      "avgVolumeInRange": 3.037237
+    },
+    {
+      "bin": "10-100 ETH",
+      "count": 171,
+      "txCountInRange": 171,
+      "avgVolumeEth": 32.134485,
+      "avgVolumeInRange": 32.134485
+    },
+    {
+      "bin": "100-1K ETH",
+      "count": 29,
+      "txCountInRange": 29,
+      "avgVolumeEth": 318.176657,
+      "avgVolumeInRange": 318.176657
+    },
+    {
+      "bin": "1K-10K ETH",
+      "count": 16,
+      "txCountInRange": 16,
+      "avgVolumeEth": 1544.894211,
+      "avgVolumeInRange": 1544.894211
+    },
+    {
+      "bin": "10K-100K ETH",
+      "count": 11,
+      "txCountInRange": 11,
+      "avgVolumeEth": 27529.301998,
+      "avgVolumeInRange": 27529.301998
+    },
+    {
+      "bin": "100K+ ETH",
+      "count": 7,
+      "txCountInRange": 7,
+      "avgVolumeEth": 106763.125854,
+      "avgVolumeInRange": 106763.125854
+    }
+  ]
+}
