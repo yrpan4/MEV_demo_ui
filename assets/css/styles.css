@@ -100,6 +100,7 @@ nav { display: grid; gap: 8px; }
 .segmented button.active { background: var(--accent); color: #04201a; }
 
 .grid { display: grid; gap: 14px; min-width: 0; }
+.grid > * { min-width: 0; }
 .cols-2 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); }
 .cols-3 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); }
 .cols-4 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr)); }
@@ -132,6 +133,20 @@ table.tx-profit-table { min-width: 1120px; table-layout: fixed; }
 table.tx-profit-table th, table.tx-profit-table td { max-width: none; }
 table.tops-table { min-width: 1120px; table-layout: fixed; }
 table.tops-table th, table.tops-table td { max-width: none; }
+table.block-detail-table { min-width: 1240px; table-layout: fixed; }
+table.block-detail-table th, table.block-detail-table td { max-width: none; }
+.block-detail-scroll { max-width: 100%; }
+table.block-detail-table th:nth-child(1), table.block-detail-table td:nth-child(1) { width: 78px; }
+table.block-detail-table th:nth-child(2), table.block-detail-table td:nth-child(2) { width: 150px; }
+table.block-detail-table th:nth-child(3), table.block-detail-table td:nth-child(3) { width: 120px; }
+table.block-detail-table th:nth-child(4), table.block-detail-table td:nth-child(4) { width: 170px; }
+table.block-detail-table th:nth-child(5), table.block-detail-table td:nth-child(5) { width: 140px; }
+table.block-detail-table th:nth-child(6), table.block-detail-table td:nth-child(6) { width: 130px; }
+table.block-detail-table th:nth-child(7), table.block-detail-table td:nth-child(7),
+table.block-detail-table th:nth-child(8), table.block-detail-table td:nth-child(8) { width: 142px; }
+table.block-detail-table th:nth-child(9), table.block-detail-table td:nth-child(9) { width: 105px; }
+table.block-detail-table th:nth-child(10), table.block-detail-table td:nth-child(10) { width: 135px; }
+table.block-detail-table th:nth-child(11), table.block-detail-table td:nth-child(11) { width: 128px; }
 table.tx-profit-table th:nth-child(1), table.tx-profit-table td:nth-child(1) { width: 92px; }
 table.tx-profit-table th:nth-child(2), table.tx-profit-table td:nth-child(2) { width: 170px; }
 table.tx-profit-table th:nth-child(3), table.tx-profit-table td:nth-child(3) { width: 100px; }

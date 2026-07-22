@@ -641,8 +641,8 @@ function blockDetailView(current) {
       </article>
       <article>
       <div class="chart-title"><h3>Block Detail</h3><small>Block ${current.block.height} | ${current.block.timestamp} | ${current.block.count} txs | Current Trading Position: <span id="currentPositionText">${state.selectedPosition}</span></small></div>
-      <div style="overflow:auto">
-        <table>
+      <div class="table-scroll-x block-detail-scroll">
+        <table class="block-detail-table">
           <thead><tr><th>Position</th><th>Txn Hash</th><th>Method</th><th>Labels</th><th>Tokens</th><th>LPs</th><th>From</th><th>To</th><th>GasFee(ETH)</th><th>Builder Payments</th><th>Type</th></tr></thead>
           <tbody>${current.rows.map((r) => `<tr class="${r.position === state.selectedPosition ? "selected-row" : ""}" data-position="${r.position}" data-tooltip="Select position ${r.position}"><td>${r.position}</td><td class="hash" data-jump="tx" data-value="${r.hash}" data-tooltip="${r.hash}">${compact(r.hash)}</td><td>${r.method}</td><td>${r.labels.map((l) => `<span class="tag" data-tooltip="${l}">${l}</span>`).join(" ")}</td><td>${tokenBadges(r.tokens)}</td><td>${r.lps.join(", ")}</td><td class="addr" data-jump="address" data-value="${r.from}" data-tooltip="${r.from}">${compact(r.from)}</td><td class="addr" data-jump="address" data-value="${r.to}" data-tooltip="${r.to}">${compact(r.to)}</td><td>${r.gasFeeEth}</td><td>${r.builderPayments}</td><td><span class="tag" data-jump="mev-type" data-value="${r.type}" data-tooltip="${current.summary}">${r.type}</span></td></tr>`).join("")}</tbody>
         </table>
@@ -1163,8 +1163,13 @@ function drawFlow(highlightIndex = -1) {
   });
   state.flowPositions[key] = pos;
   const r = Math.max(26, Math.min(36, width / 28));
+  const edgeMarkers = data.edges.map((edge, i) => {
+    const active = i === highlightIndex;
+    const markerColor = active ? colors[i % colors.length] : getCss("--muted");
+    return `<marker id="arrow-${i}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="${markerColor}"/></marker>`;
+  }).join("");
   svg.innerHTML = `
-    <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="${getCss("--accent")}"/></marker></defs>
+    <defs>${edgeMarkers}</defs>
     ${data.edges.map((edge, i) => {
       const [sx, sy] = pos[edge.from];
       const [tx, ty] = pos[edge.to];
@@ -1174,19 +1179,17 @@ function drawFlow(highlightIndex = -1) {
       const y1 = sy + dy / len * r;
       const x2 = tx - dx / len * (r + 5);
       const y2 = ty - dy / len * (r + 5);
-      const active = i <= highlightIndex || edge.position === state.selectedPosition;
-      const midX = (x1 + x2) / 2;
-      const midY = (y1 + y2) / 2;
-      const labelX = midX - 20;
-      const labelY = midY - 8;
+      const curve = flowCurve(x1, y1, x2, y2, i);
+      const active = i === highlightIndex;
+      const strokeColor = active ? colors[i % colors.length] : getCss("--muted");
       const orderWidth = Math.max(18, String(edge.position).length * 8 + 8);
       return `<g class="flow-edge" data-position="${edge.position}" data-tooltip="Position ${edge.position}: ${edge.label} | ${edge.amount}" data-detail="Position ${edge.position} | ${edge.label} | ${edge.amount}">
-        <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${active ? colors[i % colors.length] : getCss("--line")}" stroke-width="${active ? edge.weight + 2 : edge.weight}" marker-end="url(#arrow)" opacity="0.9"/>
+        <path d="${curve.path}" fill="none" stroke="${strokeColor}" stroke-width="${active ? edge.weight + 2 : edge.weight}" stroke-dasharray="${active ? "0" : "6 7"}" marker-end="url(#arrow-${i})" opacity="${active ? "0.95" : "0.48"}"/>
         <g class="flow-order-label">
-          <rect x="${labelX}" y="${labelY - 12}" width="${orderWidth}" height="16" rx="2"></rect>
-          <text x="${labelX + orderWidth / 2}" y="${labelY}" text-anchor="middle">${edge.position}</text>
+          <rect x="${curve.labelX - 4}" y="${curve.labelY - 12}" width="${orderWidth}" height="16" rx="2"></rect>
+          <text x="${curve.labelX + orderWidth / 2 - 4}" y="${curve.labelY}" text-anchor="middle">${edge.position}</text>
         </g>
-        <text x="${labelX + orderWidth + 6}" y="${labelY}" fill="${active ? getCss("--accent") : getCss("--muted")}" font-size="12">${edge.amount}</text>
+        <text x="${curve.labelX + orderWidth + 2}" y="${curve.labelY}" fill="${active ? strokeColor : getCss("--muted")}" font-size="12">${edge.amount}</text>
       </g>`;
     }).join("")}
     ${data.nodes.map((node, i) => {
@@ -1204,6 +1207,21 @@ function drawFlow(highlightIndex = -1) {
     el.addEventListener("mouseleave", hideTooltip);
   });
   attachFlowDrag(svg);
+}
+
+function flowCurve(x1, y1, x2, y2, index) {
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const len = Math.max(1, Math.hypot(dx, dy));
+  const direction = index % 2 === 0 ? 1 : -1;
+  const bend = Math.min(82, Math.max(32, len * 0.18)) * direction;
+  const cx = (x1 + x2) / 2 - dy / len * bend;
+  const cy = (y1 + y2) / 2 + dx / len * bend;
+  return {
+    path: `M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`,
+    labelX: (x1 + 2 * cx + x2) / 4 - 20,
+    labelY: (y1 + 2 * cy + y2) / 4 - 8
+  };
 }
 
 function attachFlowDrag(svg) {
@@ -1251,7 +1269,10 @@ function playFlow() {
   const timer = setInterval(() => {
     drawFlow(i);
     i += 1;
-    if (i >= total) clearInterval(timer);
+    if (i >= total) {
+      clearInterval(timer);
+      setTimeout(() => drawFlow(), 650);
+    }
   }, 650);
 }
 
